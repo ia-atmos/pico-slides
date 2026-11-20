@@ -86,7 +86,7 @@ behaves the same in a slide, in a `:Col`, or as an item of a `:List`.
   takes its natural size, placed by its `anchor`.
 
 ```
-:image ["map.png", rect=['%', x=1, y=1, w=0.3, anchor='SE']]
+:image ["map.png", rect=['%', x=1, y=1, w=0.3, anchor=:SE]]
 ```
 
 ### Composites (#8a)
@@ -162,7 +162,7 @@ with the nine names of pico as tags: `:NW`, `:N`, `:NE`, `:W`, `:C`,
   items to `:W`.
 - `anchor` is the short and inherited form; `rect` is the fine
   adjustment of one node. `anchor=:W` is the same as
-  `rect=['%', x=0, y=0.5, anchor='W']`.
+  `rect=['%', x=0, y=0.5, anchor=:W]`.
 
 ### Spaces: `cell` (#14a, #20a)
 
@@ -309,7 +309,11 @@ Not decided. The first four were raised and set aside by the author.
 
   Proposed there on 2026-11-19; its syntax and semantics are not
   decided.
-- **`fit` in pico** (session `env-pico`): today pico only stretches the
-  world onto the window. Proposed there on 2026-11-20 that pico offer
-  bars, in a resized window and in fullscreen, so that this `fit` is
-  passed straight to it.
+- **`fit` in pico** (session `env-pico`): done on 2026-11-20. It is a
+  field of the scene of any layer, `pico.set.scene [ fit=:bars ]` or
+  `fit=:stretch`, valid in a resized window and in fullscreen, so the
+  `fit` of `:Slides` is passed straight to the world. Note that the
+  default of pico is `:stretch`, and the default here is `:bars`. The
+  bars take the clear color of the window layer, and a point of the
+  mouse on a bar is outside the world. In pico, enums are now written
+  as tags (`:red`, `:NW`), as in this document.
