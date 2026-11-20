@@ -1,11 +1,12 @@
 # Design: the source table
 
 A presentation is one table: a tree of tagged nodes. This document
-records the design of that table, as decided with the author. It covers
-the source format only; the engine that plays it is not designed yet.
+records the design of that table, as decided with the author, and the
+choices that the first engine made where nothing was decided.
 
 Each decision carries its item (`#N`) from the design discussion.
-Status: **draft, under discussion**. What is not decided is in
+Status: **draft, under discussion**. What the engine chose alone is in
+[Provisional](#provisional), and what is not decided is in
 [Open](#open).
 
 ## Origin
@@ -95,8 +96,9 @@ behaves the same in a slide, in a `:Col`, or as an item of a `:List`.
 - `:Col` splits its height: the children go one below the other.
 - `:Slide` stacks its children as a `:Col` does. A `:Col` is only
   needed inside a `:Row`.
-- `:List` stacks its children as a `:Col` does, with a marker before
-  each. An item is any block, so a list nests in a list.
+- `:List` stacks its children, with a marker before each. An item is
+  any block, so a list nests in a list. How its items take the height
+  is [provisional](#provisional).
 
 The parts are equal, unless a child has a `span`.
 
@@ -166,8 +168,8 @@ with the nine names of pico as tags: `:NW`, `:N`, `:NE`, `:W`, `:C`,
 - It is inherited down the tree, as the style is.
 - The lines of a text with many lines follow its horizontal part
   (`:W` left, `:C` center, `:E` right).
-- The default is `:C` at the root. A `:List` changes the default of its
-  items to `:W`.
+- The default is `:C` at the root. A `:List` with no anchor set goes at
+  `:NW` ([provisional](#provisional), #28).
 - `anchor` is the short and inherited form; `rect` is the fine
   adjustment of one node. `anchor=:W` is the same as
   `rect=['%', x=0, y=0.5, anchor=:W]`.
@@ -183,7 +185,8 @@ cell = [ pad=NUM, gap=NUM ]
 - `gap`: the space between the children of a composite.
 - Both are fractions of the height of the slide, so that the same value
   gives the same space in both directions.
-- The group is inherited field by field.
+- The group is inherited field by field. For `pad`, the engine does
+  something narrower, which is [provisional](#provisional).
 
 ### The title (#15a)
 
@@ -285,6 +288,47 @@ font  = [ file=STR, size=NUM ]
 ]
 ```
 
+## Provisional
+
+What the first engine chose where nothing was decided, or where it
+departs from a decision. Each waits for the author.
+
+| Item | Subject | What the engine does |
+|---|---|---|
+| #28 | The items of a `:List` | Each item has the height of its content, with the `gap` between them. The list goes in its rectangle by its `anchor`, which is `:NW` if no node sets one. Proposed as #28a, not answered. |
+| #29 | The inheritance of `pad` | **Departs from #14a.** A `pad` holds only for the node that sets it. A `pad` in `:Slides` or `:Section` is the margin of their slides. With the inheritance as decided, every level of nesting would add the margin again. `gap` is inherited as decided. |
+| #30 | Default values | `font.size=0.05`, `cell.pad=0.04` (the margin of a slide), `cell.gap=0.02`, `color=[fg=:black, bg=:white]`, a window of `960x540`. |
+| #31 | The style of a title | 1.5 times the size of the text of its slide, centered at the top (`:N`). A `:text` as `title` sets its own `font`, `color`, and `anchor`. |
+| #32 | The marker of a `:List` | A dot, drawn (not a character), so that it does not depend on the font. No field chooses it yet. |
+| #33 | An item of a `:List` that is not a text | An `:image`, `:Row`, or `:Col` needs `rect=['%', h=]`, relative to the height of the list: it has no height of its own. A `rect` in a text of a list is refused. |
+| #34 | Blanks in a text | A text breaks between words, and the blanks between them collapse. The blanks that start a line are kept, as an indentation. |
+| #35 | The height of a line | The size of a font is the height of a line, glyphs and leading together, so that `n` lines take exactly `n` times the size. |
+| #36 | The keys | Right, Down, Space, PageDown: next. Left, Up, Backspace, PageUp: previous. Home, End. F: fullscreen. Escape, Q: quit. |
+
+## The engine
+
+In `src/slides.atm`, in three parts:
+
+- **`Slides.check(doc)`** validates the document against the grammar
+  and the fields above. An unknown field is an error, with the place
+  of the node: `slides : slide 2 > 0:Row > 1:text : unknown field : colour`.
+- **`Slides.layout(doc, w, h)`** resolves all slides for a world of
+  `w` by `h` pixels. Each node becomes a **frame**: its rectangle in
+  pixels, what is drawn in it (a background, lines of text, an image,
+  the dots of a list), and the frames inside it. A text that does not
+  fit is an error here (#16), for every slide, before the first one is
+  shown.
+- **`Slides.Play(doc)`** is a task. It checks, lays out, and shows the
+  current slide as a tree of tasks, one per frame: a task draws its
+  own frame on `:draw`, and holds the tasks of the frames inside it in
+  a pool. A key changes the slide, which aborts the tasks of the
+  previous one. A `:window.resize` lays everything out again.
+
+A document is played from a file of data, read with `X.loadx`
+(`./slides file`), or from an Atmos program that builds the table and
+awaits `Slides.Play(doc)`, where a template is a function that builds
+nodes (`exs/program/main.atm`).
+
 ## Open
 
 Not decided. The first three were raised and set aside by the author.
@@ -296,7 +340,6 @@ Not decided. The first three were raised and set aside by the author.
 | #6 | Steps inside a slide (the `anim` of Aurora, the overlays of Beamer) | a field `step=N` in any block |
 | #7 | Is the document only data, or may it carry functions | waits for `loadx` |
 | - | A style for all titles at once | waits for `loadx` |
-| - | The default values (`font.size`, `cell.pad`, `cell.gap`) | to be set with the engine |
 | - | Modes of `rect` other than `'%'` | not discussed |
 | - | The fields of `:List` (the marker, numbering) | not discussed |
 | - | `:Table` | left out for now (#3a) |
