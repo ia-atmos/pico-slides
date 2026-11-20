@@ -13,8 +13,8 @@
 set -e
 cd "$(dirname "$(realpath "$0")")"
 
-LANG_SHA=61dd4cdfa8c22bf334a3f3854771cfea85f7caa6
-PICO_SHA=0bba50d4cc3d1615112399b3a23f34dd506cac7a
+LANG_SHA=105cb72d4093a92e8aad89818029e1e6679f9813
+PICO_SHA=37196e4d7fe183ebd3f62aefbf229b6a8d1d88e4
 
 fetch () {  # <dir> <url> <commit>
     if [ ! -d "deps/$1/.git" ]; then
