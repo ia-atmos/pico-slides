@@ -1,0 +1,10 @@
+;; an included theme, with one of its names replaced before the include
+BG = :maroon
+include "theme.atm"
+
+:Slides [ font=FONT, color=COLOR,
+    :Slide [ title="A theme",
+        "The names come from theme.atm, and BG is replaced here.",
+        LOGO,
+    ],
+]

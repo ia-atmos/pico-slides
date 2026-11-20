@@ -1,0 +1,5 @@
+;; a theme: only definitions, included by theme.slides
+FONT  = [ file="../res/DejaVuSans.ttf" ]
+BG    = :navy
+COLOR = [ fg=:white, bg=BG ]
+LOGO  = :image ["res/square.png", rect=['%', x=1, y=1, w=0.15, anchor=:SE]]
