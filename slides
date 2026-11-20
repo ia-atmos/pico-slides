@@ -1,0 +1,25 @@
+#!/bin/sh
+# Plays a presentation:
+#
+#   ./slides <file> [<width> <height>]
+#
+# The paths inside the file (images, fonts) are relative to the file.
+# Uses deps/env-pico/atmos-pico (see ./setup.sh), or the compiler in the
+# variable ATMOS_PICO.
+
+ROOT="$(dirname "$(realpath "$0")")"
+PICO="${ATMOS_PICO:-$ROOT/deps/env-pico/atmos-pico}"
+
+if [ ! -x "$PICO" ]; then
+    echo "slides : atmos-pico not found : run ./setup.sh, or set ATMOS_PICO" >&2
+    exit 1
+fi
+if [ $# -lt 1 ]; then
+    echo "usage: slides <file> [<width> <height>]" >&2
+    exit 1
+fi
+
+file="$1"
+shift
+cd "$(dirname "$file")" || exit 1
+exec "$PICO" "$ROOT/src/main.atm" "$(basename "$file")" "$@"
