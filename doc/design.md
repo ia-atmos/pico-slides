@@ -305,8 +305,8 @@ font  = [ file=STR, size=NUM ]
 
 ## Provisional
 
-What the first engine chose where nothing was decided, or where it
-nothing was said. Each waits for the author.
+What the first engine chose where nothing was decided. Each waits for
+the author.
 
 | Item | Subject | What the engine does |
 |---|---|---|
