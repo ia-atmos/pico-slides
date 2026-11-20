@@ -9,14 +9,24 @@ commits, with a pull with rebase before each push.
 
 ## Waits for the author
 
-Each has a recommended option. Not implemented, and open:
+By the session, to be confirmed: implemented in `main` from its own
+recommendation, while he was away (his words in the session of the
+compiler, 2026-11-20: work with no input from him). Each is reversible.
+
+| Item | What was done | To undo |
+|---|---|---|
+| #6 | #6a: a field `step=N` in any block; the keys advance a step before a slide | remove the field from `Slides.check` and the test in `Slides.draw` |
+| #11 | #11a: a block `:Contents []`, a list of the titles of the sections, with the other sections dimmed inside a section | remove `Slides.lay_contents` and the tag |
+| - | The dot of an item of a list has the color of the text of the item | one line in `Slides.lay_list_at` |
+| - | `setup.sh` fetches the current commits of the compiler and of pico (for `include` in `X.loadx`) | the two hashes |
+
+Open, with no recommendation acted on:
 
 | Item | Question | Recommended |
 |---|---|---|
-| #6 | Steps inside a slide | #6a: a field `step=N` in any block |
-| #11 | The table of contents in the source | #11a: a block `:Contents []` |
+| - | A key for the table of contents at any time (the `T` of Aurora) | not discussed |
 | - | References (the `Ref` and `Reference` of Aurora) | not discussed |
-| - | A style for all titles at once | not discussed since `X.loadx` has no spread |
+| - | A block that hides at a later step | not discussed |
 | - | The readme: what it says of Aurora and of Presotto, and whether he is told | written in a neutral way, to be reviewed |
 
 ## Index of items
@@ -28,12 +38,12 @@ Each has a recommended option. Not implemented, and open:
 | #3 | The leaves, `List` and `Table` | #3a, with no `:Table` |
 | #4 | Style | #4a, inherited, in `color=[]` and `font=[]`, colors as tags |
 | #5 | Sections | #5a, `:Section` |
-| #6 | Steps | set aside |
+| #6 | Steps | #6a, by the session, to be confirmed |
 | #7 | Only data, or functions | answered by `X.loadx`: data with names |
 | #8 | Composites of layout | #8a, `:Row` and `:Col`; the slide stacks |
 | #9 | Inheritance in a group | #9a, field by field |
 | #10 | Alignment | #10a, `anchor`, inherited |
-| #11 | The table of contents | set aside |
+| #11 | The table of contents | #11a, by the session, to be confirmed |
 | #12 | The size of a leaf | #12a, an image fits, a text breaks |
 | #13 | Unequal parts | #13a, a weight in the child |
 | #14 | Spaces | #14a, two fields; `gap` inherited, `pad` not (#29) |
@@ -54,6 +64,7 @@ Each has a recommended option. Not implemented, and open:
 | #28 | The items of a `:List` | #28a, together; an item that is not a text needs `rect.h` |
 | #30-#36 | Choices of the engine (defaults, title, marker, blanks, line, keys) | confirmed as a whole (#37); #33 went with #28 |
 | #37 | Confirm the choices of the engine | yes |
+| #38 | Next step | #38a, steps |
 
 ## Known, not done
 
@@ -76,4 +87,4 @@ Each has a recommended option. Not implemented, and open:
 |---|---|---|
 | `atmos-loadx` (`ia-atmos/lang`) | `X.loadx`, data with names | done, in `main`; used by `src/main.atm` |
 | `env-pico` | `fit` in the scene of a layer | done, in `main`; used by `Slides.world` |
-| `paper-media` (`ia-atmos/lang`) | asked for the vocabulary when agreed (tags, fields, how time would enter) | not sent yet: the author did not ask |
+| `paper-media` (`ia-atmos/lang`) | asked for the vocabulary when agreed (tags, fields, how time would enter) | sent on 2026-11-20 |

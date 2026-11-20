@@ -57,6 +57,7 @@ Block   : :Row   [ Block* ]
         | :List  [ Block* ]
         | Text
         | :image [ STR ]            ;; the path of the file
+        | :Contents [ ]             ;; the table of contents
         | STR                       ;; same as :text [ STR ]
 Text    : :text  [ STR ]
 ```
@@ -68,6 +69,7 @@ Text    : :text  [ STR ]
 | Slide | `:Slide` | directly in `:Slides` or `:Section` | any block |
 | Composite block | `:Row`, `:Col`, `:List` | anywhere inside a slide | any block |
 | Leaf block | `:text`, `:image`, a string | anywhere inside a slide | its content only |
+| Generated block | `:Contents` | anywhere inside a slide | nothing |
 
 Not valid: a `:Slide` inside a block or another slide; a block directly
 in `:Slides` or `:Section`; children in a leaf.
@@ -225,6 +227,65 @@ Two fields of `:Slides`:
 pico. The resolution is that of the
 window in all cases.
 
+## Steps (#6a, to be confirmed)
+
+*Chosen by the session from its own recommendation, while the author
+was away. It waits for his confirmation.*
+
+A key that advances shows one more part of a slide before it goes to
+the next one. A block has a field `step`:
+
+```
+:Slide [ title="Requirements",
+    :List [
+        "No empty program",
+        :text ["No reading of its own file", step=1],
+        :text ["Output equal to the source", step=2],
+    ],
+    :image ["quine.png", step=2],
+]
+```
+
+- A block with no `step` shows from the start (step 0).
+- A block with `step=N` shows from the step `N` until the end of the
+  slide.
+- In a composite, the `step` holds for all inside it: a child shows at
+  the latest of its own step and the step of what holds it.
+- A slide has as many steps as the highest `step` in it.
+- The layout does not change: a hidden block already has its
+  rectangle, and nothing moves when it shows.
+- To advance shows the next step, and at the last one goes to the next
+  slide. To go back undoes a step, and at step 0 goes to the previous
+  slide, at its last step. `Home` goes to the first slide at step 0,
+  and `End` to the last slide with all shown.
+
+Not there: a block that hides again at a later step.
+
+## The table of contents (#11a, to be confirmed)
+
+*Chosen by the session from its own recommendation, while the author
+was away. It waits for his confirmation.*
+
+`:Contents []` is a block that the engine expands into a `:List` with
+the titles of the sections, in order.
+
+```
+:Slides [
+    :Slide [ title="Agenda", :Contents [] ],
+    :Section [ title="Introduction", ... ],
+    :Section [ title="Objectives",   ... ],
+]
+```
+
+- It goes wherever a block goes, and takes the fields of a block
+  (`rect`, `span`, `anchor`, `color`, `font`, `cell`, `step`).
+- In a slide of a section, the titles of the other sections are
+  dimmed (the color of the text mixed with the background).
+- It has no entries.
+
+Not there: a key that shows the table of contents at any time (the
+`T` of Aurora), and the references.
+
 ## Style (#4a, #9a)
 
 Two groups, valid in any node:
@@ -254,6 +315,7 @@ font  = [ file=STR, size=NUM ]
 | `title` | `:Slide`, `:Section` | no |
 | `rect` | any block | no |
 | `span` | any child of a composite | no |
+| `step` | any block | to what is inside (the latest holds) |
 | `anchor` | any node | yes |
 | `color=[fg=, bg=]` | any node | yes, field by field |
 | `font=[file=, size=]` | any node | yes, field by field |
@@ -314,7 +376,8 @@ author as a whole (#37).
 | #32 | The marker of a `:List` | A dot, drawn (not a character), so that it does not depend on the font. No field chooses it yet. |
 | #34 | Blanks in a text | A text breaks between words, and the blanks between them collapse. The blanks that start a line are kept, as an indentation. |
 | #35 | The height of a line | The size of a font is the height of a line, glyphs and leading together, so that `n` lines take exactly `n` times the size. |
-| #36 | The keys | Right, Down, Space, PageDown: next. Left, Up, Backspace, PageUp: previous. Home, End. F: fullscreen. Escape, Q: quit. |
+| #36 | The keys | Right, Down, Space, PageDown: next (step, then slide). Left, Up, Backspace, PageUp: previous. Home, End. F: fullscreen. Escape, Q: quit. |
+| - | The marker of an item | The dot of an item has the color of the text of the item. |
 
 ## The engine
 
@@ -342,15 +405,16 @@ nodes (`exs/program/main.atm`).
 
 ## Open
 
-Not decided. The first three were raised and set aside by the author.
+Not decided.
 
 | Item | Question | Proposed |
 |---|---|---|
-| #11 | How the table of contents appears in the source | a block `:Contents []`, expanded by the engine from the sections |
+| #6 | Steps inside a slide | implemented as #6a, to be confirmed (above) |
+| #11 | The table of contents | implemented as #11a, to be confirmed (above) |
+| - | A key for the table of contents at any time (the `T` of Aurora) | not discussed |
 | - | References (the `Ref` table and the `Reference` slide of Aurora) | not discussed |
-| #6 | Steps inside a slide (the `anim` of Aurora, the overlays of Beamer) | a field `step=N` in any block |
-| #7 | Is the document only data, or may it carry functions | waits for `loadx` |
-| - | A style for all titles at once | waits for `loadx` |
+| - | A block that hides at a later step (the `<2-3>` of Beamer) | not discussed |
+| - | A style for all titles at once | a name of a theme covers one group; nothing for a whole style (#27a) |
 | - | Modes of `rect` other than `'%'` | not discussed |
 | - | The fields of `:List` (the marker, numbering) | not discussed |
 | - | `:Table` | left out for now (#3a) |
@@ -364,7 +428,9 @@ Not decided. The first three were raised and set aside by the author.
   `ia-atmos/lang` (manual, section "Load with Names").
 
   ```
-  Text  : { ID `=´ Value } Value
+  Text  : { Def } Value
+  Def   : ID `=´ Value
+        | `include´ STR
   Value : (as in X.load) | ID
   ```
 
@@ -372,6 +438,10 @@ Not decided. The first three were raised and set aside by the author.
     of a field. There is **no spread** and no merge of fields.
   - Each use is a deep copy, so the result is still a tree.
   - A name sees only the names defined before it.
+  - An `include` reads the definitions of another file, which is how a
+    **theme** is shared by many documents.
+  - The first definition of a name holds: a document replaces a name of
+    a theme by defining it before the `include` (`tst/theme.slides`).
 
   ```
   BIG  = [ size=0.08 ]

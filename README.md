@@ -31,6 +31,10 @@ nodes, as data, and the engine lays it out and shows it:
 - Colors, fonts, and spaces are inherited down the tree.
 - A text that does not fit in its rectangle is an error, when the
   document is loaded.
+- A block with `step=N` only shows after `N` keys, and `:Contents []`
+  is the table of contents, made from the sections.
+- A file may define names for what repeats, and `include` a theme with
+  the names that many presentations share.
 
 The format is in [`doc/design.md`](doc/design.md), with the decisions
 behind it and what is still open.
@@ -55,8 +59,8 @@ the file (images, fonts) are relative to it.
 
 | Key | Effect |
 |---|---|
-| Right, Down, Space, PageDown | the next slide |
-| Left, Up, Backspace, PageUp | the previous slide |
+| Right, Down, Space, PageDown | the next step, or the next slide |
+| Left, Up, Backspace, PageUp | the previous step, or the previous slide |
 | Home, End | the first and the last slides |
 | F | fullscreen |
 | Escape, Q | quit |
