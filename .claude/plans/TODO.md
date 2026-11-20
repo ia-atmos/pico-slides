@@ -6,19 +6,7 @@ reused. The decisions themselves are in `doc/design.md`.
 
 ## Waits for the author
 
-Each has a recommended option. The first block is what the engine
-already does, with no answer from him.
-
-| Item | Question | Recommended, and what the engine does |
-|---|---|---|
-| #30 | The default values | size `0.05`, pad `0.04`, gap `0.02`, black on white, window `960x540` |
-| #31 | The style of a title | 1.5 times the text, centered at the top |
-| #32 | The marker of a `:List` | a drawn dot, no field |
-| #34 | Blanks in a text | collapse between words, kept at the start of a line |
-| #35 | The height of a line | the size of the font is the whole line, leading included |
-| #36 | The keys | as in the readme |
-
-Not implemented, and open:
+Each has a recommended option. Not implemented, and open:
 
 | Item | Question | Recommended |
 |---|---|---|
@@ -62,7 +50,8 @@ Not implemented, and open:
 | #27 | A name for a whole style | #27a, nothing for now |
 | #29 | The inheritance of `pad` | not inherited, as the engine does |
 | #28 | The items of a `:List` | #28a, together; an item that is not a text needs `rect.h` |
-| #30-#32, #34-#36 | Choices of the engine | wait for him (above) |
+| #30-#36 | Choices of the engine (defaults, title, marker, blanks, line, keys) | confirmed as a whole (#37); #33 went with #28 |
+| #37 | Confirm the choices of the engine | yes |
 
 ## Known, not done
 

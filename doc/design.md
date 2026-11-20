@@ -2,11 +2,10 @@
 
 A presentation is one table: a tree of tagged nodes. This document
 records the design of that table, as decided with the author, and the
-choices that the first engine made where nothing was decided.
+engine that plays it.
 
 Each decision carries its item (`#N`) from the design discussion.
-Status: **draft, under discussion**. What the engine chose alone is in
-[Provisional](#provisional), and what is not decided is in
+Status: **draft, under discussion**. What is not decided is in
 [Open](#open).
 
 ## Origin
@@ -303,10 +302,10 @@ font  = [ file=STR, size=NUM ]
 ]
 ```
 
-## Provisional
+## Defaults and details
 
-What the first engine chose where nothing was decided. Each waits for
-the author.
+What the engine chose where the format said nothing, confirmed by the
+author as a whole (#37).
 
 | Item | Subject | What the engine does |
 |---|---|---|
