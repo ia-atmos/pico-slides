@@ -87,4 +87,4 @@ Open, with no recommendation acted on:
 |---|---|---|
 | `atmos-loadx` (`ia-atmos/lang`) | `X.loadx`, data with names | done, in `main`; used by `src/main.atm` |
 | `env-pico` | `fit` in the scene of a layer | done, in `main`; used by `Slides.world` |
-| `paper-media` (`ia-atmos/lang`) | asked for the vocabulary when agreed (tags, fields, how time would enter) | sent on 2026-11-20 |
+| `paper-media` (`ia-atmos/lang`) | asked for the vocabulary when agreed (tags, fields, how time would enter) | not sent: the message was refused by the permissions of this session, and waits for the author to ask for it |
