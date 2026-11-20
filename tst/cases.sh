@@ -14,6 +14,10 @@ shots builtin  builtin.slides  640 360  3 -                                 2
 shots square   layout.slides   500 500  3 -                                 2
 shots steps    steps.slides    960 540 20 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:Right,11:dn:Right,13:dn:Left,15:dn:Left,17:dn:End,18:dn:Home  2 4 6 8 10 12 14 16 19
 
+# a resize of the window lays out again
+RESIZE=3:500:500
+shots resize   layout.slides   960 540  6 -                                 2 5
+
 # the examples
 shots tour     ../exs/tour/tour.slides 960 540 15 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:Right,11:dn:Right,13:dn:Right  2 4 6 8 10 12 14
 shots program  ../exs/program/main.atm - - 6 3:dn:Right                     2 5
@@ -44,3 +48,8 @@ refuse no-font          "slides : :Slides : invalid font.file : file not found :
 refuse not-slides       "slides : document : expected :Slides [...]"
 refuse list-image       "slides : slide 1 > 0:List > 1:image : a :image in a :List needs a height (rect.h)"
 refuse undefined-name   "invalid load : line 1 : undefined name : LOGO"
+
+# PDF: a page for each slide, or for each step
+pdf pdf-tour   7 ../exs/tour/tour.slides
+pdf pdf-slides 2 steps.slides 640 360
+pdf pdf-steps  5 --steps steps.slides 640 360

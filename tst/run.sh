@@ -6,7 +6,8 @@
 # A visual test plays a document under scripted keys, saves the window
 # at some frames to tst/out/, and compares each file with its reference
 # in tst/asr/. An error test (tst/err/) checks the message of a document
-# that must be refused.
+# that must be refused. A PDF test checks the number of pages of the file
+# that ../slides --pdf writes.
 #
 # With -u, the references are updated from the output instead of
 # compared: look at the images before committing them.
@@ -40,6 +41,7 @@ want () {
 #         window and ignores the width and height
 #   keys: f:dn:Key,... or "-" for none
 #   each <frame> is saved as out/<name>-<frame>.png
+#   RESIZE=f:w:h,... before the call resizes the window at those frames
 shots () {
     name=$1; file=$2; w=$3; h=$4; frames=$5; keys=$6
     shift 6
@@ -50,6 +52,8 @@ shots () {
         rm -f "out/$name-$f.png"
     done
     [ "$keys" = "-" ] && keys=""
+    resize="$RESIZE"
+    RESIZE=""
     case "$file" in
         *.atm)
             ( cd "$(dirname "$file")" &&
@@ -59,6 +63,7 @@ shots () {
             ;;
         *)
             PICO_ATM_FRAMES=$frames:20 PICO_ATM_KEYS="$keys" \
+                PICO_ATM_RESIZE="$resize" \
                 PICO_ATM_SHOT="$list" SDL_AUDIODRIVER=dummy \
                 xvfb-run -a ../slides "$file" "$w" "$h" > "out/$name.log" 2>&1
             ;;
@@ -95,6 +100,23 @@ refuse () {
         echo "OK   $name"
     else
         echo "FAIL $name    (see tst/out/$name.log)"
+        fail=1
+    fi
+}
+
+# pdf <name> <pages> <args of ../slides after --pdf out> ...
+#   the PDF must be written, with that number of pages
+pdf () {
+    name=$1; pages=$2
+    shift 2
+    want "$name" || return 0
+    rm -f "out/$name.pdf"
+    ../slides --pdf "out/$name.pdf" "$@" > "out/$name.log" 2>&1
+    n=$(grep -a -c "/Type /Page " "out/$name.pdf" 2>/dev/null)
+    if [ "$n" = "$pages" ]; then
+        echo "OK   $name"
+    else
+        echo "FAIL $name    (pages: ${n:-none}, expected $pages; see tst/out/$name.log)"
         fail=1
     fi
 }
