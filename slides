@@ -1,25 +1,66 @@
 #!/bin/sh
-# Plays a presentation:
+# Plays a presentation, or saves it as a PDF:
 #
 #   ./slides <file> [<width> <height>]
+#   ./slides --pdf <out.pdf> [--steps] <file> [<width> <height>]
 #
 # The paths inside the file (images, fonts) are relative to the file.
-# Uses deps/env-pico/atmos-pico (see ./setup.sh), or the compiler in the
-# variable ATMOS_PICO.
+#
+# With --pdf, nothing is shown: each slide is drawn with no window and
+# becomes a page, an image with the given dimension (1920x1080 if
+# absent). With --steps, each step of a slide is a page.
+#
+# Uses deps/ (see ./setup.sh), or the compiler in the variable
+# ATMOS_PICO.
 
 ROOT="$(dirname "$(realpath "$0")")"
 PICO="${ATMOS_PICO:-$ROOT/deps/env-pico/atmos-pico}"
+
+usage () {
+    echo "usage: slides <file> [<width> <height>]" >&2
+    echo "       slides --pdf <out.pdf> [--steps] <file> [<width> <height>]" >&2
+    exit 1
+}
+
+pdf=""
+steps=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --pdf)   [ $# -ge 2 ] || usage; pdf="$2"; shift 2 ;;
+        --steps) steps="steps"; shift ;;
+        --*)     usage ;;
+        *)       break ;;
+    esac
+done
+[ $# -ge 1 ] || usage
 
 if [ ! -x "$PICO" ]; then
     echo "slides : atmos-pico not found : run ./setup.sh, or set ATMOS_PICO" >&2
     exit 1
 fi
-if [ $# -lt 1 ]; then
-    echo "usage: slides <file> [<width> <height>]" >&2
-    exit 1
-fi
 
 file="$1"
 shift
+
+if [ -z "$pdf" ]; then
+    cd "$(dirname "$file")" || exit 1
+    exec "$PICO" "$ROOT/src/main.atm" "$(basename "$file")" "$@"
+fi
+
+if [ ! -x "$ROOT/deps/png2pdf" ]; then
+    echo "slides : deps/png2pdf not found : run ./setup.sh" >&2
+    exit 1
+fi
+
+case "$pdf" in
+    /*) ;;
+    *)  pdf="$PWD/$pdf" ;;
+esac
+tmp="$(mktemp -d)" || exit 1
+trap 'rm -rf "$tmp"' EXIT
+
 cd "$(dirname "$file")" || exit 1
-exec "$PICO" "$ROOT/src/main.atm" "$(basename "$file")" "$@"
+"$PICO" -t "$ROOT/src/main.atm" "$(basename "$file")" \
+    "${1:-1920}" "${2:-1080}" "$tmp/page-" $steps || exit 1
+"$ROOT/deps/png2pdf" "$pdf" "$tmp"/page-*.png || exit 1
+echo "slides : $pdf"

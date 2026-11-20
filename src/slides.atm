@@ -1044,3 +1044,30 @@ task Slides.Play (doc) {
         until quit
     }
 }
+
+;; Saves the slides as images, `<prefix>0001.png` and so on, with the
+;; dimension of the world: pico must be open. With `steps`, there is an
+;; image for each step of each slide; otherwise, one for each slide,
+;; with all its steps shown. Evaluates to the number of images.
+task Slides.Export (doc, prefix, steps) {
+    Slides.check(doc)
+    val w, h = Slides.world(doc)
+    pin frames = Slides.layout(doc, w, h)
+    var page = 0
+    loop i in #frames {
+        val f = frames@i
+        pin slide = spawn Slides.Frame(f)
+        val from = if steps => 0 => f.steps
+        loop s in (from, f.steps) {
+            set Slides.step = s
+            ;; the world holds a drawing from its `:draw` until the clear
+            ;; of the next frame, which comes after `:frame`
+            await :draw
+            await :frame
+            set page = page + 1
+            pico.output.screenshot(pico.layer.world,
+                string.format("%s%04d.png", prefix, page))
+        }
+    }
+    page
+}
