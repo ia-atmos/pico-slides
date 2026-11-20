@@ -1,7 +1,7 @@
 #!/bin/sh
 # Fetches the Atmos compiler and pico at fixed commits into deps/, and
-# builds them. The result is deps/env-pico/atmos-pico, which ./slides
-# uses.
+# builds them, and the tool that writes a PDF. The result is
+# deps/env-pico/atmos-pico and deps/png2pdf, which ./slides uses.
 #
 # Requires git, make, a C compiler, and the SDL2 packages:
 #
@@ -13,8 +13,8 @@
 set -e
 cd "$(dirname "$(realpath "$0")")"
 
-LANG_SHA=105cb72d4093a92e8aad89818029e1e6679f9813
-PICO_SHA=37196e4d7fe183ebd3f62aefbf229b6a8d1d88e4
+LANG_SHA=51440ed680e46eaacaaad348869f1ccd3ea27ffd
+PICO_SHA=0f6a5546fb7633fac653bcef4b81759db1bd5858
 
 fetch () {  # <dir> <url> <commit>
     if [ ! -d "deps/$1/.git" ]; then
@@ -32,4 +32,8 @@ fetch env-pico https://github.com/ia-atmos/env-pico "$PICO_SHA"
 make -C deps/lang
 make -C deps/env-pico ATMOS="$PWD/deps/lang"
 
-echo "ok : deps/env-pico/atmos-pico"
+# the tool that joins the images of the slides in a PDF (./slides --pdf)
+cc -O2 tools/png2pdf.c -o deps/png2pdf \
+    $(sdl2-config --cflags --libs) -lSDL2_image -lz
+
+echo "ok : deps/env-pico/atmos-pico, deps/png2pdf"
