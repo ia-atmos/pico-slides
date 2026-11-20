@@ -57,6 +57,11 @@ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev \
 `./slides <file> [<width> <height>]` plays a file of data. The paths in
 the file (images, fonts) are relative to it.
 
+`./slides --pdf <out.pdf> [--steps] <file> [<width> <height>]` saves
+the presentation as a PDF, with no window: each slide is drawn as on
+the screen and becomes a page, an image of `1920x1080` if no dimension
+is given. With `--steps`, each step of a slide is a page.
+
 | Key | Effect |
 |---|---|
 | Right, Down, Space, PageDown | the next step, or the next slide |
@@ -95,8 +100,9 @@ See [`exs/program/main.atm`](exs/program/main.atm), which runs with
 |---|---|
 | `src/slides.atm` | the engine: `Slides.check`, `Slides.layout`, `Slides.Play` |
 | `src/main.atm` | plays a file of data, read with `X.loadx` |
-| `slides` | runs `src/main.atm` from the directory of the file |
-| `setup.sh` | fetches the compiler and pico at fixed commits into `deps/` |
+| `slides` | runs `src/main.atm` from the directory of the file; `--pdf` writes a PDF |
+| `tools/png2pdf.c` | joins images in a PDF, one per page |
+| `setup.sh` | fetches the compiler and pico at fixed commits into `deps/`, and builds the tool |
 | `doc/design.md` | the format, and the decisions |
 | `exs/` | examples |
 | `tst/` | tests: `tst/run.sh` |
@@ -111,7 +117,8 @@ tst/run.sh text list    # only some
 
 A visual test plays a document under scripted keys, saves the window at
 some frames, and compares each image with its reference in `tst/asr/`.
-An error test checks the message of a document that must be refused.
+An error test checks the message of a document that must be refused,
+and a PDF test the number of pages of the file.
 The references depend on the rendering of fonts, and may differ with
 other versions of SDL and FreeType.
 

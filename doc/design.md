@@ -227,10 +227,7 @@ Two fields of `:Slides`:
 pico. The resolution is that of the
 window in all cases.
 
-## Steps (#6a, to be confirmed)
-
-*Chosen by the session from its own recommendation, while the author
-was away. It waits for his confirmation.*
+## Steps (#6a, #39)
 
 A key that advances shows one more part of a slide before it goes to
 the next one. A block has a field `step`:
@@ -261,10 +258,7 @@ the next one. A block has a field `step`:
 
 Not there: a block that hides again at a later step.
 
-## The table of contents (#11a, to be confirmed)
-
-*Chosen by the session from its own recommendation, while the author
-was away. It waits for his confirmation.*
+## The table of contents (#11a, #39)
 
 `:Contents []` is a block that the engine expands into a `:List` with
 the titles of the sections, in order.
@@ -398,6 +392,21 @@ In `src/slides.atm`, in three parts:
   a pool. A key changes the slide, which aborts the tasks of the
   previous one. A `:window.resize` lays everything out again.
 
+- **`Slides.Export(doc, prefix, steps)`** is a task that saves each
+  slide as an image, for the PDF.
+
+### PDF (#41a)
+
+`./slides --pdf out.pdf file` draws each slide with no window, as on
+the screen, saves it as an image, and joins the images in a PDF
+(`tools/png2pdf.c`), one per page. The PDF is the screen itself: there
+is no second renderer to differ from it, and the dimension of the
+images is a choice (`1920x1080` if absent). The text is not selectable.
+A vectorial PDF, from the same frames, is a later option (#41b).
+
+A page is a slide with all its steps shown, or each step with
+`--steps` (this default was chosen by the session, to be confirmed).
+
 A document is played from a file of data, read with `X.loadx`
 (`./slides file`), or from an Atmos program that builds the table and
 awaits `Slides.Play(doc)`, where a template is a function that builds
@@ -409,8 +418,6 @@ Not decided.
 
 | Item | Question | Proposed |
 |---|---|---|
-| #6 | Steps inside a slide | implemented as #6a, to be confirmed (above) |
-| #11 | The table of contents | implemented as #11a, to be confirmed (above) |
 | - | A key for the table of contents at any time (the `T` of Aurora) | not discussed |
 | - | References (the `Ref` table and the `Reference` slide of Aurora) | not discussed |
 | - | A block that hides at a later step (the `<2-3>` of Beamer) | not discussed |

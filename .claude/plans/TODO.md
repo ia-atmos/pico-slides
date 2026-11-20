@@ -9,16 +9,12 @@ commits, with a pull with rebase before each push.
 
 ## Waits for the author
 
-By the session, to be confirmed: implemented in `main` from its own
-recommendation, while he was away (his words in the session of the
-compiler, 2026-11-20: work with no input from him). Each is reversible.
+By the session, to be confirmed (each is reversible):
 
 | Item | What was done | To undo |
 |---|---|---|
-| #6 | #6a: a field `step=N` in any block; the keys advance a step before a slide | remove the field from `Slides.check` and the test in `Slides.draw` |
-| #11 | #11a: a block `:Contents []`, a list of the titles of the sections, with the other sections dimmed inside a section | remove `Slides.lay_contents` and the tag |
+| #42 | In a PDF, a page is a slide with all its steps shown; `--steps` gives a page for each step | the default in `slides` |
 | - | The dot of an item of a list has the color of the text of the item | one line in `Slides.lay_list_at` |
-| - | `setup.sh` fetches the current commits of the compiler and of pico (for `include` in `X.loadx`) | the two hashes |
 
 Open, with no recommendation acted on:
 
@@ -38,12 +34,12 @@ Open, with no recommendation acted on:
 | #3 | The leaves, `List` and `Table` | #3a, with no `:Table` |
 | #4 | Style | #4a, inherited, in `color=[]` and `font=[]`, colors as tags |
 | #5 | Sections | #5a, `:Section` |
-| #6 | Steps | #6a, by the session, to be confirmed |
+| #6 | Steps | #6a, confirmed (#39) |
 | #7 | Only data, or functions | answered by `X.loadx`: data with names |
 | #8 | Composites of layout | #8a, `:Row` and `:Col`; the slide stacks |
 | #9 | Inheritance in a group | #9a, field by field |
 | #10 | Alignment | #10a, `anchor`, inherited |
-| #11 | The table of contents | #11a, by the session, to be confirmed |
+| #11 | The table of contents | #11a, confirmed (#39) |
 | #12 | The size of a leaf | #12a, an image fits, a text breaks |
 | #13 | Unequal parts | #13a, a weight in the child |
 | #14 | Spaces | #14a, two fields; `gap` inherited, `pad` not (#29) |
@@ -65,11 +61,19 @@ Open, with no recommendation acted on:
 | #30-#36 | Choices of the engine (defaults, title, marker, blanks, line, keys) | confirmed as a whole (#37); #33 went with #28 |
 | #37 | Confirm the choices of the engine | yes |
 | #38 | Next step | #38a, steps |
+| #39 | Confirm #6a and #11a | yes |
+| #40 | Answer `atmos-loadx` and `env-pico` | yes, sent |
+| #41 | A PDF | #41a, an image of each slide |
+| #42 | A page for a slide or for a step | by the session: a slide, `--steps` for each step |
 
 ## Known, not done
 
-- A resize of the window and the fullscreen are not covered by tests:
-  the scripted events of pico have keys and the mouse only.
+- The fullscreen is not covered by tests (a resize is, since pico has
+  `PICO_ATM_RESIZE`).
+- The visual tests still run under `xvfb-run`. Pico now runs with no
+  display (`atmos-pico -t`, which the PDF uses), with another renderer:
+  to move the tests there, the references must be made again.
+- The text of a PDF is not selectable (#41b would give that).
 - `./slides` compiles the engine at each run (a few seconds). A build
   that is kept would start at once.
 - The text layers that pico keeps for each string and size are only
@@ -87,4 +91,5 @@ Open, with no recommendation acted on:
 |---|---|---|
 | `atmos-loadx` (`ia-atmos/lang`) | `X.loadx`, data with names | done, in `main`; used by `src/main.atm` |
 | `env-pico` | `fit` in the scene of a layer | done, in `main`; used by `Slides.world` |
+| `env-pico` | what the engine works around: line breaking (env-pico#13), exact line height (#14), the cache of texts (#15), scripted resize (done) | #13 to #15 wait for the author there |
 | `paper-media` (`ia-atmos/lang`) | asked for the vocabulary when agreed (tags, fields, how time would enter) | not sent: the message was refused by the permissions of this session, and waits for the author to ask for it |
