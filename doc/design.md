@@ -304,19 +304,35 @@ Not decided. The first three were raised and set aside by the author.
 
 ## Depends on other sessions
 
-- **`loadx`** (session `atmos-loadx`, in `ia-atmos/lang`): a loader of
-  data that accepts names and spread, so that a style or a block that
-  repeats is written once:
+- **`X.loadx`** (session `atmos-loadx`, in `ia-atmos/lang`): a loader
+  of data that accepts names, so that a value that repeats is written
+  once. Agreed with the author on 2026-11-20 and implemented on the
+  branch `loadx` of `ia-atmos/lang` (not in `main` yet).
 
   ```
-  TITLE = [ font=[size=0.08], color=[fg=:blue] ]
+  Text  : { ID `=´ Value } Value
+  Value : (as in X.load) | ID
+  ```
+
+  - A name is used as a value only: a positional entry, or the value
+    of a field. There is **no spread** and no merge of fields.
+  - Each use is a deep copy, so the result is still a tree.
+  - A name sees only the names defined before it.
+
+  ```
+  BIG  = [ size=0.08 ]
+  BLUE = [ fg=:blue ]
+  LOGO = :image ["logo.png", anchor=:SE]
+
   :Slides [
-      :Slide [ title=:text ["Culture", TITLE...], ... ],
+      :Slide [ title=:text ["Culture", font=BIG, color=BLUE], LOGO ],
+      :Slide [ LOGO ],
   ]
   ```
 
-  Proposed there on 2026-11-19; its syntax and semantics are not
-  decided.
+  The groups of style are values, so a name fits them directly
+  (`font=BIG`). A name for a style that crosses groups needs a field
+  of its own, which is open.
 - **`fit` in pico** (session `env-pico`): done on 2026-11-20. It is a
   field of the scene of any layer, `pico.set.scene [ fit=:bars ]` or
   `fit=:stretch`, valid in a resized window and in fullscreen, so the
