@@ -1,0 +1,42 @@
+;; A presentation written as an Atmos program: the document is a value
+;; of the language, and a template is a function that builds a part of
+;; it.
+;;
+;;   cd exs/program/ && atmos-pico main.atm
+
+include "../../src/slides.atm"
+
+val FONT = "../../res/DejaVuSans.ttf"
+
+;; a template: a cover with a title and an author
+func Cover (title, author) {
+    :Slide [ color=[bg=:navy, fg=:white],
+        :text [title,  font=[size=0.12], span=2, anchor=:S],
+        :text [author, anchor=:N],
+    ]
+}
+
+;; a template: a title, and a text beside a list
+func TextAndList (title, text, items) {
+    val list = :List []
+    loop i in #items {
+        set list@+ = items@i
+    }
+    :Slide [ title=title,
+        :Row [ :text [text, anchor=:W], list ],
+    ]
+}
+
+pin doc = :Slides [
+    font = [file=FONT],
+    Cover("Templates", "are functions"),
+    TextAndList("A template",
+        "A function receives the content and builds the nodes.",
+        ["no new tags", "no change in the engine", "any layout"]
+    ),
+]
+
+pico.open [ title="pico-slides" ]
+pico.set.dim ['!', w=960, h=540]
+
+await Slides.Play(doc)

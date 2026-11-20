@@ -1,0 +1,89 @@
+;; A tour of pico-slides, written in its own format.
+;;
+;;   ../../slides tour.slides
+
+FONT  = [ file="../../res/DejaVuSans.ttf" ]
+CODE  = [ fg=:navy ]
+SMALL = [ file="../../res/DejaVuSans.ttf", size=0.04 ]
+LOGO  = :image ["square.png", rect=['%', x=1, y=1, w=0.08, anchor=:SE]]
+
+:Slides [ aspect=[16, 9], fit=:bars,
+    font = FONT,
+
+    :Slide [ color=[bg=:navy, fg=:white],
+        :text ["pico-slides", font=[size=0.15], span=2, anchor=:S],
+        :text ["A presentation is a table", anchor=:N],
+    ],
+
+    :Section [ title="The table",
+        :Slide [ title="A tree of nodes",
+            :List [
+                "A node is a table with a tag",
+                "Its named fields are attributes",
+                "Its positional entries are its children",
+                :List [
+                    "a tag in lower case draws: :text, :image",
+                    "a tag in upper case arranges: :Slide, :Row, :Col, :List",
+                ],
+            ],
+            LOGO,
+        ],
+        :Slide [ title="It is only data",
+            :Row [
+                :text [''':Slide [ title="Hello",
+    "A text",
+    :image ["logo.png"],
+]''', anchor=:W, color=CODE, font=SMALL],
+                :Col [ color=[bg=:silver],
+                    "A text",
+                    :image ["square.png"],
+                ],
+            ],
+        ],
+    ],
+
+    :Section [ title="Layout",
+        :Slide [ title="Rows and columns",
+            :Row [
+                :text ["a :Row puts its children side by side", color=[bg=:yellow]],
+                :Col [
+                    :text ["a :Col stacks them", color=[bg=:cyan]],
+                    :text ["and they nest", color=[bg=:pink]],
+                ],
+            ],
+        ],
+        :Slide [ title="Unequal parts",
+            :text ["span=3", span=3, color=[bg=:silver]],
+            :Row [
+                :image ["wide.png"], :image ["tall.png"], :image ["square.png"],
+            ],
+        ],
+        :Slide [ title="Anchors", cell=[gap=0.01],
+            :Row [
+                :text [":NW", anchor=:NW, color=[bg=:silver]],
+                :text [":N",  anchor=:N],
+                :text [":NE", anchor=:NE, color=[bg=:silver]],
+            ],
+            :Row [
+                :text [":W",  anchor=:W],
+                :text [":C",  anchor=:C,  color=[bg=:silver]],
+                :text [":E",  anchor=:E],
+            ],
+            :Row [
+                :text [":SW", anchor=:SW, color=[bg=:silver]],
+                :text [":S",  anchor=:S],
+                :text [":SE", anchor=:SE, color=[bg=:silver]],
+            ],
+        ],
+    ],
+
+    :Slide [ title="Keys", anchor=:W,
+        :List [
+            "Right, Down, Space, PageDown: the next slide",
+            "Left, Up, Backspace, PageUp: the previous slide",
+            "Home, End: the first and the last slides",
+            "F: fullscreen",
+            "Escape, Q: quit",
+        ],
+    ],
+]
