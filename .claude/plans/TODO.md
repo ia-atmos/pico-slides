@@ -4,6 +4,9 @@ The state of `pico-slides`: what waits for the author, what is known and
 not done. Items are `#N`, in the order they were put to him, never
 reused. The decisions themselves are in `doc/design.md`.
 
+Rule of the author (2026-11-20): always write in `main`, in small
+commits, with a pull with rebase before each push.
+
 ## Waits for the author
 
 Each has a recommended option. Not implemented, and open:
@@ -15,7 +18,6 @@ Each has a recommended option. Not implemented, and open:
 | - | References (the `Ref` and `Reference` of Aurora) | not discussed |
 | - | A style for all titles at once | not discussed since `X.loadx` has no spread |
 | - | The readme: what it says of Aurora and of Presotto, and whether he is told | written in a neutral way, to be reviewed |
-| - | The branch: the work is in `ccr-a4a702e3-dtgv66`, not in `main` | to be merged when he says |
 
 ## Index of items
 
