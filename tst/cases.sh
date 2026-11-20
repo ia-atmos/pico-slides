@@ -10,6 +10,7 @@ shots stretch  stretch.slides  800 400  3 -                                 2
 shots names    names.slides    960 540  6 3:dn:Right                        2 5
 shots builtin  builtin.slides  640 360  3 -                                 2
 shots square   layout.slides   500 500  3 -                                 2
+shots steps    steps.slides    960 540 20 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:Right,11:dn:Right,13:dn:Left,15:dn:Left,17:dn:End,18:dn:Home  2 4 6 8 10 12 14 16 19
 
 # the examples
 shots tour     ../exs/tour/tour.slides 960 540 15 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:Right,11:dn:Right,13:dn:Right  2 4 6 8 10 12 14
@@ -26,6 +27,7 @@ refuse bad-color        "slides : slide 1 > 0:text : invalid color.fg : expected
 refuse bad-anchor       "slides : slide 1 : invalid anchor"
 refuse bad-rect         "slides : slide 1 > 0:text : invalid rect : expected both x and y, or none"
 refuse bad-rect-mode    "slides : slide 1 > 0:text : invalid rect : expected ['%', ...]"
+refuse bad-step         "slides : slide 1 > 0:text : invalid step : expected integer from 0"
 refuse bad-span         "slides : slide 1 > 0:text : invalid span"
 refuse bad-aspect       "slides : :Slides : invalid aspect : expected [w, h]"
 refuse bad-fit          "slides : :Slides : invalid fit"

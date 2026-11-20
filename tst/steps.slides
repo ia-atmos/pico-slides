@@ -1,0 +1,18 @@
+;; steps: a block shows from its step on, and nothing moves
+:Slides [
+    font = [file="../res/DejaVuSans.ttf"],
+    :Slide [ title="Steps",
+        :Row [
+            :List [
+                "from the start",
+                :text ["at step 1", step=1],
+                :List [ step=2, "a sublist at step 2", :text ["its item at step 3", step=3] ],
+            ],
+            :Col [
+                :image ["res/square.png", step=2],
+                :text ["with the sublist", step=1, color=[bg=:yellow]],
+            ],
+        ],
+    ],
+    :Slide [ title="No steps here", "the next slide" ],
+]
