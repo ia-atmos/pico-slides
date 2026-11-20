@@ -1,0 +1,36 @@
+;; Plays a presentation written as data:
+;;
+;;   atmos-pico main.atm <file> [<width> <height>]
+;;
+;; The file is read with `X.loadx` (see doc/design.md). The paths in it
+;; (images, fonts) are relative to the current directory.
+
+include "slides.atm"
+
+val path, w, h = ...
+
+if path == nil {
+    print("usage: slides <file> [<width> <height>]")
+    os.exit(1)
+}
+
+val f, msg = io.open(path)
+if f == nil {
+    print("slides : " ++ path ++ " : " ++ msg)
+    os.exit(1)
+}
+
+pin doc = X.loadx(io.read(f, :all))
+Slides.check(doc)
+
+pico.open [ title="pico-slides" ]
+pico.set.aids(false)
+pico.set.layer(pico.layer.window)
+pico.set.effect [ color=:black ]       ;; the bars of `fit=:bars`
+pico.set.scene [ dim=['!',
+    w=(tonumber(w) || Slides.dflt.win.w),
+    h=(tonumber(h) || Slides.dflt.win.h),
+] ]
+pico.set.layer(pico.layer.world)
+
+await Slides.Play(doc)
