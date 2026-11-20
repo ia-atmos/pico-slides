@@ -149,6 +149,14 @@ inherited.
 :text ["BIG", rect=['%', h=0.5]]    ;; a line is half the height of the cell
 ```
 
+### A text that does not fit (#16)
+
+A text whose broken lines pass the height of its rectangle is an
+**error**, always: when the document is loaded, for all slides, and
+also if the window changes afterwards. The error says the slide, the
+node, and by how much. Nothing is clipped, shrunk, or drawn over a
+neighbor. An image never overflows, since it fits.
+
 ### Alignment: `anchor` (#10a)
 
 The field `anchor` says at which point of its rectangle a leaf sits,
@@ -186,7 +194,7 @@ cell = [ pad=NUM, gap=NUM ]
 - `title` is a string, or a `:text [...]` to give it a style of its
   own.
 
-### The dimension of the slide (#17, #21, #22a)
+### The dimension of the slide (#17, #21, #22a, #25b)
 
 Two fields of `:Slides`:
 
@@ -194,10 +202,11 @@ Two fields of `:Slides`:
 |---|---|---|
 | `aspect` | absent | the slide follows the proportion of the window |
 | `aspect` | `[w, h]`, as in `[16, 9]` | a fixed proportion |
-| `fit` | `:bars` (default) | the slide is scaled until it fits whole; the rest is bars |
-| `fit` | `:stretch` | the slide fills the window, deformed |
+| `fit` | `:stretch` (default) | the slide fills the window, deformed |
+| `fit` | `:bars` | the slide is scaled until it fits whole; the rest is bars |
 
-`fit` only matters with a fixed `aspect`. The resolution is that of the
+`fit` only matters with a fixed `aspect`. Its default is the same as in
+pico. The resolution is that of the
 window in all cases.
 
 ## Style (#4a, #9a)
@@ -278,14 +287,13 @@ font  = [ file=STR, size=NUM ]
 
 ## Open
 
-Not decided. The first four were raised and set aside by the author.
+Not decided. The first three were raised and set aside by the author.
 
 | Item | Question | Proposed |
 |---|---|---|
 | #11 | How the table of contents appears in the source | a block `:Contents []`, expanded by the engine from the sections |
 | - | References (the `Ref` table and the `Reference` slide of Aurora) | not discussed |
 | #6 | Steps inside a slide (the `anim` of Aurora, the overlays of Beamer) | a field `step=N` in any block |
-| #16 | A text that does not fit in its rectangle | it overflows over its neighbors, and the engine warns |
 | #7 | Is the document only data, or may it carry functions | waits for `loadx` |
 | - | A style for all titles at once | waits for `loadx` |
 | - | The default values (`font.size`, `cell.pad`, `cell.gap`) | to be set with the engine |
@@ -312,8 +320,8 @@ Not decided. The first four were raised and set aside by the author.
 - **`fit` in pico** (session `env-pico`): done on 2026-11-20. It is a
   field of the scene of any layer, `pico.set.scene [ fit=:bars ]` or
   `fit=:stretch`, valid in a resized window and in fullscreen, so the
-  `fit` of `:Slides` is passed straight to the world. Note that the
-  default of pico is `:stretch`, and the default here is `:bars`. The
+  `fit` of `:Slides` is passed straight to the world, with the same
+  default (`:stretch`). The
   bars take the clear color of the window layer, and a point of the
   mouse on a bar is outside the world. In pico, enums are now written
   as tags (`:red`, `:NW`), as in this document.
