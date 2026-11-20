@@ -8,6 +8,7 @@ shots sections sections.slides 960 540 12 3:dn:Right,5:dn:End,7:dn:Left,9:dn:Hom
 shots aspect   aspect.slides   800 400  3 -                                 2
 shots stretch  stretch.slides  800 400  3 -                                 2
 shots names    names.slides    960 540  6 3:dn:Right                        2 5
+shots contents contents.slides 960 540  8 4:dn:Right,6:dn:Right             2 5 7
 shots theme    theme.slides    960 540  3 -                                 2
 shots builtin  builtin.slides  640 360  3 -                                 2
 shots square   layout.slides   500 500  3 -                                 2
@@ -29,6 +30,7 @@ refuse bad-anchor       "slides : slide 1 : invalid anchor"
 refuse bad-rect         "slides : slide 1 > 0:text : invalid rect : expected both x and y, or none"
 refuse bad-rect-mode    "slides : slide 1 > 0:text : invalid rect : expected ['%', ...]"
 refuse bad-step         "slides : slide 1 > 0:text : invalid step : expected integer from 0"
+refuse contents-entries "slides : slide 1 > 0:Contents : expected no entries"
 refuse bad-span         "slides : slide 1 > 0:text : invalid span"
 refuse bad-aspect       "slides : :Slides : invalid aspect : expected [w, h]"
 refuse bad-fit          "slides : :Slides : invalid fit"

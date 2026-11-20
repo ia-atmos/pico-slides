@@ -14,6 +14,8 @@ pin Slides = [
     W = 0,              ;; the dimension of the world, in pixels
     H = 0,
     step = 0,           ;; the step of the current slide that is shown
+    sections = [],      ;; the titles of the sections, during a layout
+    section = nil,      ;; the index of the section of the slide in layout
     pts = [],           ;; cache: font and line height -> point size
     ;; defaults (provisional, see doc/design.md)
     dflt = [
@@ -58,7 +60,8 @@ func Slides.isnum (v) {
 ;; ------------------------------------------------------------------------
 
 func Slides.is_block (tag) {
-    (tag == :Row) || (tag == :Col) || (tag == :List) || (tag == :text) || (tag == :image)
+    (tag == :Row) || (tag == :Col) || (tag == :List) || (tag == :text) ||
+        (tag == :image) || (tag == :Contents)
 }
 
 func Slides.is_anchor (a) {
@@ -208,6 +211,11 @@ func Slides.check_block (loc, n) {
     }
     ifs {
         tag == :text => Slides.check_text(me, n)
+        tag == :Contents => {
+            if #n != 0 {
+                Slides.err(me, "expected no entries")
+            }
+        }
         tag == :image => {
             Slides.check_text(me, n)
             val f = io.open(n@0)
@@ -718,6 +726,7 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
             val d = math.max(2, math.floor(line * 0.3))
             set out.dots@+ = [
                 step = f.step,
+                fg = f.fg || st.fg,     ;; the color of the text of the item
                 x = math.floor(x + (indent-d)/2),
                 y = math.floor(cy + (math.min(first,line)-d)/2),
                 d = d,
@@ -744,6 +753,26 @@ func Slides.lay_list (n, R, up, loc) {
     [ x=B.x, y=B.y, w=B.w, h=B.h, bg=Slides.own_bg(n), kids=[f], step=st.step ]
 }
 
+;; The table of contents: a list with the titles of the sections. In a
+;; slide of a section, the other sections are dimmed.
+func Slides.lay_contents (n, R, up, loc) {
+    val st = Slides.style(up, n)
+    val dim = pico.color.mix(st.fg, st.bg)
+    val list = :List [
+        rect=n.rect, span=n.span, anchor=n.anchor, step=n.step,
+        color=n.color, font=n.font, cell=n.cell,
+    ]
+    loop i in #Slides.sections {
+        val title = Slides.sections@i
+        if (Slides.section == nil) || (Slides.section == i) {
+            set list@+ = title
+        } else {
+            set list@+ = :text [ title, color=[fg=dim] ]
+        }
+    }
+    Slides.lay_list(list, R, up, loc)
+}
+
 ;; Resolves the block `n` in the rectangle `R`, with the style `up` of
 ;; its parent. Evaluates to its frame.
 func Slides.lay (n, R, up, loc) {
@@ -755,6 +784,7 @@ func Slides.lay (n, R, up, loc) {
         n.tag == :text  => Slides.lay_text(n@0, n, R, up, me)
         n.tag == :image => Slides.lay_image(n, R, up, me, false)
         n.tag == :List  => Slides.lay_list(n, R, up, me)
+        n.tag == :Contents => Slides.lay_contents(n, R, up, me)
         else => {
             val st = Slides.style(up, n)
             val B = Slides.box(n, R, st)
@@ -826,10 +856,12 @@ func Slides.lay_slide (n, up, loc) {
 }
 
 ;; The slides of the document, in order, each with the style that it
-;; receives and the title of its section.
+;; receives and the index of its section. Also collects the titles of
+;; the sections.
 func Slides.flat (doc) {
     val out = []
     val root = Slides.style(Slides.root(), doc)
+    vector.clear(Slides.sections)
     loop i in #doc {
         val s = doc@i
         if s.tag == :Slide {
@@ -837,8 +869,9 @@ func Slides.flat (doc) {
         } else {
             val sst = Slides.style(root, s)
             loop j in #s {
-                set out@+ = [ n=s@j, up=sst, section=s.title ]
+                set out@+ = [ n=s@j, up=sst, section=#Slides.sections ]
             }
+            set Slides.sections@+ = s.title
         }
     }
     out
@@ -853,6 +886,7 @@ func Slides.layout (doc, w, h) {
     val flat = Slides.flat(doc)
     val out = []
     loop i in #flat {
+        set Slides.section = flat@i.section
         set out@+ = Slides.lay_slide(flat@i.n, flat@i.up, "slide " ++ (i+1))
     }
     out
@@ -886,12 +920,12 @@ func Slides.draw (f) {
         }
     }
     if f.dots {
-        pico.set.pencil [ color=f.fg, style=:fill ]
         loop i in #f.dots {
             val d = f.dots@i
             if d.step > Slides.step {
                 skip
             }
+            pico.set.pencil [ color=d.fg, style=:fill ]
             pico.output.draw.oval ['!', x=d.x, y=d.y, w=d.d, h=d.d, anchor=:NW]
         }
     }
