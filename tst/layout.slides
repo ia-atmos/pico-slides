@@ -1,0 +1,29 @@
+;; rows, columns, spans, gaps, pads, and backgrounds
+:Slides [
+    font = [file="../res/DejaVuSans.ttf"],
+    :Slide [ title="Rows and columns",
+        :Row [
+            :text ["left", color=[bg=:yellow]],
+            :Col [
+                :text ["top right", color=[bg=:cyan]],
+                :text ["bottom right", color=[bg=:pink]],
+            ],
+        ],
+    ],
+    :Slide [ color=[bg=:silver], cell=[gap=0.05],
+        :text ["span 3", span=3, color=[bg=:white]],
+        :Row [ color=[bg=:gray], cell=[pad=0.02, gap=0],
+            :text ["1", color=[bg=:red, fg=:white]],
+            :text ["2 (span 2)", span=2, color=[bg=:green]],
+            :text ["1", color=[bg=:blue, fg=:white]],
+        ],
+    ],
+    :Slide [ cell=[pad=0, gap=0], color=[bg=:black, fg=:white],
+        :Row [
+            :Col [ "a", :Row [ "b", "c" ] ],
+            :Col [ rect=['%', w=0.5, h=0.5], color=[bg=:navy],
+                "d", "e",
+            ],
+        ],
+    ],
+]

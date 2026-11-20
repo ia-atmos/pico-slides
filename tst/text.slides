@@ -1,0 +1,41 @@
+;; wrapping, line breaks, anchors, sizes, and colors of text
+:Slides [
+    font = [file="../res/DejaVuSans.ttf"],
+    cell = [gap=0.01],
+    :Slide [ title="The nine anchors",
+        :Row [
+            :text ["NW", anchor=:NW, color=[bg=:silver]],
+            :text ["N",  anchor=:N],
+            :text ["NE", anchor=:NE, color=[bg=:silver]],
+        ],
+        :Row [
+            :text ["W",  anchor=:W],
+            :text ["C",  anchor=:C,  color=[bg=:silver]],
+            :text ["E",  anchor=:E],
+        ],
+        :Row [
+            :text ["SW", anchor=:SW, color=[bg=:silver]],
+            :text ["S",  anchor=:S],
+            :text ["SE", anchor=:SE, color=[bg=:silver]],
+        ],
+    ],
+    :Slide [ title="Wrapping",
+        :Row [
+            :text ["A text that is long enough to break in some lines, aligned to the west.", anchor=:W],
+            :text ["A text that is long enough to break in some lines, aligned to the center."],
+            :text ["A text that is long enough to break in some lines, aligned to the east.", anchor=:E],
+        ],
+        :text ['''first line
+second line
+
+fourth line, after an empty one''', anchor=:NW, color=[fg=:blue]],
+    ],
+    :Slide [ title=:text ["A title to the west, in red", anchor=:W, color=[fg=:red], font=[size=0.06]],
+        :Row [
+            :text ["BIG", rect=['%', h=0.5], color=[bg=:yellow]],
+            :text ["small", font=[size=0.03]],
+            :text ["at SE", rect=['%', x=1, y=1, anchor=:SE], color=[bg=:yellow]],
+        ],
+        :text ["Acentuação: ação, coração, à, é, ô, ü, ñ", color=[fg=:white, bg=:black]],
+    ],
+]

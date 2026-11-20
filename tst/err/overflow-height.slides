@@ -1,0 +1,11 @@
+:Slides [ font = [file="../../res/DejaVuSans.ttf"],
+    :Slide [ title="Too much text",
+        :Row [
+            "short",
+            :Col [
+                "This text is far too long for the small rectangle that it receives in this column, and so it does not fit in its height, which must be an error when the document is loaded.",
+                "a", "b", "c", "d",
+            ],
+        ],
+    ],
+]

@@ -1,0 +1,7 @@
+;; no font: the built-in font of pico
+:Slides [
+    :Slide [ title="Built-in font",
+        :List [ "one", "two" ],
+        "A text in the built-in font of pico.",
+    ],
+]

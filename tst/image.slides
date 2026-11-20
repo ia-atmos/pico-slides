@@ -1,0 +1,27 @@
+;; images: fit, sizes, anchors, and positions
+:Slides [
+    font = [file="../res/DejaVuSans.ttf"],
+    :Slide [ title="An image fits in its rectangle",
+        :Row [
+            :image ["res/wide.png",   color=[bg=:silver]],
+            :image ["res/tall.png"],
+            :image ["res/square.png", color=[bg=:silver]],
+        ],
+        :Row [ span=2,
+            :image ["res/wide.png"],
+            :image ["res/tall.png",   color=[bg=:silver]],
+            :image ["res/square.png"],
+        ],
+    ],
+    :Slide [ title="Sizes and positions",
+        :Row [
+            :image ["res/square.png", rect=['%', w=0.5], color=[bg=:silver]],
+            :image ["res/square.png", rect=['%', h=0.25], anchor=:NW],
+            :image ["res/square.png", rect=['%', w=0.8, h=0.3], color=[bg=:silver]],
+            :image ["res/square.png", rect=['%', x=1, y=1, w=0.3, anchor=:SE]],
+        ],
+    ],
+    :Slide [ cell=[pad=0],
+        :image ["res/wide.png"],
+    ],
+]

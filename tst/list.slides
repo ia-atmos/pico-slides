@@ -1,0 +1,27 @@
+;; lists: items together, sublists, items that are not texts
+:Slides [
+    font = [file="../res/DejaVuSans.ttf"],
+    :Slide [ title="A list",
+        :List [
+            "No empty program",
+            "No reading of its own file, which is an item that is long enough to break in two lines at this width",
+            :List [ "a sublist", :text ["with a red item", color=[fg=:red]], :List [ "and one more level" ] ],
+            "The last item",
+        ],
+    ],
+    :Slide [ title="Lists and anchors",
+        :Row [
+            :List [ color=[bg=:silver], "default", "is NW" ],
+            :List [ anchor=:C, "anchor", "is C" ],
+            :List [ anchor=:SE, color=[bg=:silver], font=[size=0.035], cell=[gap=0], "anchor", "is SE", "small, no gap" ],
+        ],
+    ],
+    :Slide [ title="Items that are not texts",
+        :List [
+            "An image:",
+            :image ["res/wide.png", rect=['%', h=0.3]],
+            "A row:",
+            :Row [ rect=['%', h=0.2], color=[bg=:silver], "one", "two", "three" ],
+        ],
+    ],
+]

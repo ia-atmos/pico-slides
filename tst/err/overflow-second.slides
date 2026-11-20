@@ -1,0 +1,4 @@
+:Slides [ font = [file="../../res/DejaVuSans.ttf"],
+    :Slide [ "this one is fine" ],
+    :Slide [ :text ["but this one is too big for the slide", font=[size=0.6]] ],
+]

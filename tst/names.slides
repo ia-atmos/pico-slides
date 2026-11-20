@@ -1,0 +1,15 @@
+;; names (X.loadx): a group of style and a block that repeat
+BIG  = [ file="../res/DejaVuSans.ttf", size=0.1 ]
+BLUE = [ fg=:blue ]
+LOGO = :image ["res/square.png", rect=['%', x=1, y=1, w=0.2, anchor=:SE]]
+
+:Slides [
+    font = [file="../res/DejaVuSans.ttf"],
+    :Slide [ title=:text ["Names", font=BIG, color=BLUE],
+        :text ["a big text", font=BIG],
+        LOGO,
+    ],
+    :Slide [
+        :Row [ :text ["blue", color=BLUE], LOGO ],
+    ],
+]
