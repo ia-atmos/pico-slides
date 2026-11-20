@@ -12,7 +12,6 @@ already does, with no answer from him.
 | Item | Question | Recommended, and what the engine does |
 |---|---|---|
 | #28 | How the items of a `:List` take the height | #28a: each item with the height of its content; the engine does this |
-| #29 | `pad` is inherited (#14a), so every level of nesting adds the margin again | `pad` only for the node that sets it, and from `:Slides` and `:Section` to their slides; the engine does this, which departs from #14a |
 | #30 | The default values | size `0.05`, pad `0.04`, gap `0.02`, black on white, window `960x540` |
 | #31 | The style of a title | 1.5 times the text, centered at the top |
 | #32 | The marker of a `:List` | a drawn dot, no field |
@@ -49,7 +48,7 @@ Not implemented, and open:
 | #11 | The table of contents | set aside |
 | #12 | The size of a leaf | #12a, an image fits, a text breaks |
 | #13 | Unequal parts | #13a, a weight in the child |
-| #14 | Spaces | #14a, two fields, inherited (see #29) |
+| #14 | Spaces | #14a, two fields; `gap` inherited, `pad` not (#29) |
 | #15 | The title | #15a, a field with a band |
 | #16 | A text that does not fit | an error, always |
 | #17 | The dimension of the slide | `aspect`, or the window if absent |
@@ -63,7 +62,8 @@ Not implemented, and open:
 | #25 | The default of `fit` | #25b, `:stretch`, as pico |
 | #26 | Next step | he said to go ahead with all that can be done |
 | #27 | A name for a whole style | #27a, nothing for now |
-| #28-#36 | Choices of the engine | wait for him (above) |
+| #29 | The inheritance of `pad` | not inherited, as the engine does |
+| #28, #30-#36 | Choices of the engine | wait for him (above) |
 
 ## Known, not done
 

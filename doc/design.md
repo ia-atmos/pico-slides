@@ -174,7 +174,7 @@ with the nine names of pico as tags: `:NW`, `:N`, `:NE`, `:W`, `:C`,
   adjustment of one node. `anchor=:W` is the same as
   `rect=['%', x=0, y=0.5, anchor=:W]`.
 
-### Spaces: `cell` (#14a, #20a)
+### Spaces: `cell` (#14a, #20a, #29)
 
 ```
 cell = [ pad=NUM, gap=NUM ]
@@ -185,8 +185,11 @@ cell = [ pad=NUM, gap=NUM ]
 - `gap`: the space between the children of a composite.
 - Both are fractions of the height of the slide, so that the same value
   gives the same space in both directions.
-- The group is inherited field by field. For `pad`, the engine does
-  something narrower, which is [provisional](#provisional).
+- `gap` is inherited, field by field.
+- `pad` is not inherited (#29): it holds only for the node that sets
+  it, since otherwise every level of nesting would add the margin
+  again. A `pad` in `:Slides` or `:Section` is the margin of their
+  slides.
 
 ### The title (#15a)
 
@@ -244,7 +247,8 @@ font  = [ file=STR, size=NUM ]
 | `anchor` | any node | yes |
 | `color=[fg=, bg=]` | any node | yes, field by field |
 | `font=[file=, size=]` | any node | yes, field by field |
-| `cell=[pad=, gap=]` | any node | yes, field by field |
+| `cell=[gap=]` | any node | yes |
+| `cell=[pad=]` | any node | no (from `:Slides` and `:Section` to their slides) |
 
 ## A complete example
 
@@ -296,7 +300,6 @@ departs from a decision. Each waits for the author.
 | Item | Subject | What the engine does |
 |---|---|---|
 | #28 | The items of a `:List` | Each item has the height of its content, with the `gap` between them. The list goes in its rectangle by its `anchor`, which is `:NW` if no node sets one. Proposed as #28a, not answered. |
-| #29 | The inheritance of `pad` | **Departs from #14a.** A `pad` holds only for the node that sets it. A `pad` in `:Slides` or `:Section` is the margin of their slides. With the inheritance as decided, every level of nesting would add the margin again. `gap` is inherited as decided. |
 | #30 | Default values | `font.size=0.05`, `cell.pad=0.04` (the margin of a slide), `cell.gap=0.02`, `color=[fg=:black, bg=:white]`, a window of `960x540`. |
 | #31 | The style of a title | 1.5 times the size of the text of its slide, centered at the top (`:N`). A `:text` as `title` sets its own `font`, `color`, and `anchor`. |
 | #32 | The marker of a `:List` | A dot, drawn (not a character), so that it does not depend on the font. No field chooses it yet. |
