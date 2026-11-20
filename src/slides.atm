@@ -1,0 +1,966 @@
+;; pico-slides: a presentation is a table, played by tasks.
+;;
+;; The format of the table is in `doc/design.md`. This file has three
+;; parts, all in the table `Slides`:
+;;
+;;   Slides.check(doc)       validates a document (no pico needed)
+;;   Slides.layout(doc)      resolves every slide into a tree of frames
+;;   Slides.Play(doc)        a task that shows the document, with keys
+;;
+;; A frame is a rectangle in pixels of the world, with what is drawn in
+;; it, and the frames inside it. A task draws each frame.
+
+pin Slides = [
+    W = 0,              ;; the dimension of the world, in pixels
+    H = 0,
+    pts = [],           ;; cache: font and line height -> point size
+    ;; defaults (provisional, see doc/design.md)
+    dflt = [
+        fg    = :black,
+        bg    = :white,
+        size  = 0.05,   ;; height of a line, fraction of the slide height
+        pad   = 0.04,   ;; margin of a slide
+        gap   = 0.02,   ;; space between the children of a composite
+        title = 1.5,    ;; size of a title, relative to the size of the text
+        win   = [w=960, h=540],
+    ],
+]
+
+;; ------------------------------------------------------------------------
+;; ERRORS
+;; ------------------------------------------------------------------------
+
+func Slides.err (loc, msg) {
+    throw "slides : " ++ loc ++ " : " ++ msg
+}
+
+;; the place of the child `i` of the node at `loc`, for messages
+func Slides.sub (loc, i, k) {
+    val tag = if type(k) == 'table' => tostring(k.tag) => "text"
+    loc ++ " > " ++ i ++ ":" ++ tag
+}
+
+func Slides.istab (v) {
+    type(v) == 'table'
+}
+
+func Slides.isstr (v) {
+    type(v) == 'string'
+}
+
+func Slides.isnum (v) {
+    type(v) == 'number'
+}
+
+;; ------------------------------------------------------------------------
+;; CHECK
+;; ------------------------------------------------------------------------
+
+func Slides.is_block (tag) {
+    (tag == :Row) || (tag == :Col) || (tag == :List) || (tag == :text) || (tag == :image)
+}
+
+func Slides.is_anchor (a) {
+    if Slides.isstr(a) {
+        (a==:C) || (a==:N) || (a==:S) || (a==:W) || (a==:E) ||
+            (a==:NW) || (a==:NE) || (a==:SW) || (a==:SE)
+    } else {
+        Slides.istab(a) && Slides.isnum(a.x) && Slides.isnum(a.y)
+    }
+}
+
+;; the fields of a group, as in color=[fg=, bg=]
+func Slides.check_group (loc, name, g, kinds) {
+    if !Slides.istab(g) {
+        Slides.err(loc, "invalid " ++ name ++ " : expected table")
+    }
+    loop k,v in g {
+        val kind = kinds@(k)
+        if kind == nil {
+            Slides.err(loc, "invalid " ++ name ++ " : unknown field : " ++ tostring(k))
+        }
+        ifs {
+            kind == :num => {
+                if !(Slides.isnum(v) && (v >= 0)) {
+                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected number")
+                }
+            }
+            kind == :str => {
+                if !Slides.isstr(v) {
+                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected string")
+                }
+            }
+            kind == :file => {
+                if !Slides.isstr(v) {
+                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected string")
+                }
+                val f = io.open(v)
+                if f == nil {
+                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : file not found : " ++ v)
+                }
+            }
+            kind == :color => {
+                val ok = catch true {
+                    pico.color.alpha(v, 0xFF)
+                }
+                if !ok {
+                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected color")
+                }
+            }
+        }
+    }
+}
+
+;; the fields that any node accepts
+func Slides.check_common (loc, n, k, v) {
+    ifs {
+        k == :tag => true
+        k == :color => {
+            Slides.check_group(loc, "color", v, [fg=:color, bg=:color])
+            true
+        }
+        k == :font => {
+            Slides.check_group(loc, "font", v, [file=:file, size=:num])
+            true
+        }
+        k == :cell => {
+            Slides.check_group(loc, "cell", v, [pad=:num, gap=:num])
+            true
+        }
+        k == :anchor => {
+            if !Slides.is_anchor(v) {
+                Slides.err(loc, "invalid anchor")
+            }
+            true
+        }
+        else => false
+    }
+}
+
+func Slides.check_rect (loc, r) {
+    if !(Slides.istab(r) && (r@0 == '%')) {
+        Slides.err(loc, "invalid rect : expected ['%', ...]")
+    }
+    loop k,v in r {
+        ifs {
+            k == 0 => nil
+            k == :anchor => {
+                if !Slides.is_anchor(v) {
+                    Slides.err(loc, "invalid rect : invalid anchor")
+                }
+            }
+            (k==:x) || (k==:y) || (k==:w) || (k==:h) => {
+                if !Slides.isnum(v) {
+                    Slides.err(loc, "invalid rect : expected number in " ++ k)
+                }
+            }
+            else => Slides.err(loc, "invalid rect : unknown field : " ++ tostring(k))
+        }
+    }
+    if (r.x == nil) != (r.y == nil) {
+        Slides.err(loc, "invalid rect : expected both x and y, or none")
+    }
+    if ((r.w != nil) && (r.w <= 0)) || ((r.h != nil) && (r.h <= 0)) {
+        Slides.err(loc, "invalid rect : expected positive w and h")
+    }
+}
+
+func Slides.check_text (loc, n) {
+    if (#n != 1) || !Slides.isstr(n@0) {
+        Slides.err(loc, "expected a single string")
+    }
+}
+
+func Slides.check_block (loc, n) {
+    if Slides.isstr(n) {
+        return
+    }
+    if !(Slides.istab(n) && Slides.isstr(n.tag)) {
+        Slides.err(loc, "expected a block")
+    }
+    val tag = n.tag
+    val me = loc
+    if !Slides.is_block(tag) {
+        Slides.err(loc, "unknown block : :" ++ tag)
+    }
+    loop k,v in n {
+        if Slides.isnum(k) {
+            skip
+        }
+        if Slides.check_common(me, n, k, v) {
+            skip
+        }
+        ifs {
+            k == :rect => Slides.check_rect(me, v)
+            k == :span => {
+                if !(Slides.isnum(v) && (v > 0)) {
+                    Slides.err(me, "invalid span : expected positive number")
+                }
+            }
+            else => Slides.err(me, "unknown field : " ++ tostring(k))
+        }
+    }
+    ifs {
+        tag == :text => Slides.check_text(me, n)
+        tag == :image => {
+            Slides.check_text(me, n)
+            val f = io.open(n@0)
+            if f == nil {
+                Slides.err(me, "file not found : " ++ n@0)
+            }
+        }
+        else => {
+            loop i in #n {
+                Slides.check_block(Slides.sub(me, i, n@i), n@i)
+            }
+        }
+    }
+}
+
+func Slides.check_title (loc, n) {
+    val t = n.title
+    ifs {
+        t == nil => nil
+        Slides.isstr(t) => nil
+        Slides.istab(t) && (t.tag == :text) => Slides.check_block(loc ++ " > title", t)
+        else => Slides.err(loc, "invalid title : expected string or :text")
+    }
+}
+
+func Slides.check_slide (loc, n) {
+    loop k,v in n {
+        if Slides.isnum(k) {
+            skip
+        }
+        if Slides.check_common(loc, n, k, v) {
+            skip
+        }
+        if k != :title {
+            Slides.err(loc, "unknown field : " ++ tostring(k))
+        }
+    }
+    Slides.check_title(loc, n)
+    loop i in #n {
+        Slides.check_block(Slides.sub(loc, i, n@i), n@i)
+    }
+}
+
+;; Validates the document: raises an error with the place of the first
+;; problem. Evaluates to the number of slides.
+func Slides.check (doc) {
+    if !(Slides.istab(doc) && (doc.tag == :Slides)) {
+        Slides.err("document", "expected :Slides [...]")
+    }
+    loop k,v in doc {
+        if Slides.isnum(k) {
+            skip
+        }
+        if Slides.check_common(":Slides", doc, k, v) {
+            skip
+        }
+        ifs {
+            k == :aspect => {
+                if !(Slides.istab(v) && Slides.isnum(v@0) && Slides.isnum(v@1) &&
+                     (v@0 > 0) && (v@1 > 0) && (#v == 2))
+                {
+                    Slides.err(":Slides", "invalid aspect : expected [w, h]")
+                }
+            }
+            k == :fit => {
+                if !((v == :stretch) || (v == :bars)) {
+                    Slides.err(":Slides", "invalid fit : expected :stretch or :bars")
+                }
+            }
+            else => Slides.err(":Slides", "unknown field : " ++ tostring(k))
+        }
+    }
+    var n = 0
+    loop i in #doc {
+        val s = doc@i
+        if !(Slides.istab(s) && ((s.tag == :Slide) || (s.tag == :Section))) {
+            Slides.err(":Slides > " ++ i, "expected :Slide or :Section")
+        }
+        if s.tag == :Slide {
+            set n = n + 1
+            Slides.check_slide("slide " ++ n, s)
+        } else {
+            val me = ":Slides > " ++ i ++ ":Section"
+            loop k,v in s {
+                if Slides.isnum(k) {
+                    skip
+                }
+                if Slides.check_common(me, s, k, v) {
+                    skip
+                }
+                if k != :title {
+                    Slides.err(me, "unknown field : " ++ tostring(k))
+                }
+            }
+            if !Slides.isstr(s.title) {
+                Slides.err(me, "invalid title : expected string")
+            }
+            loop j in #s {
+                val ss = s@j
+                if !(Slides.istab(ss) && (ss.tag == :Slide)) {
+                    Slides.err(me ++ " > " ++ j, "expected :Slide")
+                }
+                set n = n + 1
+                Slides.check_slide("slide " ++ n, ss)
+            }
+        }
+    }
+    n
+}
+
+;; ------------------------------------------------------------------------
+;; STYLE
+;; ------------------------------------------------------------------------
+
+;; The style that a node gives to what is inside it: the one it
+;; received, with the fields that it sets. `pad` only passes from
+;; :Slides and :Section to their slides (see doc/design.md).
+func Slides.style (up, n) {
+    val st = [
+        fg=up.fg, bg=up.bg, file=up.file, size=up.size,
+        pad=up.pad, gap=up.gap, anchor=up.anchor,
+    ]
+    if Slides.istab(n) {
+        if n.color {
+            if n.color.fg != nil { set st.fg = n.color.fg }
+            if n.color.bg != nil { set st.bg = n.color.bg }
+        }
+        if n.font {
+            if n.font.file != nil { set st.file = n.font.file }
+            if n.font.size != nil { set st.size = n.font.size }
+        }
+        if n.cell {
+            if n.cell.pad != nil { set st.pad = n.cell.pad }
+            if n.cell.gap != nil { set st.gap = n.cell.gap }
+        }
+        if n.anchor != nil { set st.anchor = n.anchor }
+    }
+    st
+}
+
+func Slides.root () {
+    val d = Slides.dflt
+    [ fg=d.fg, bg=d.bg, file=nil, size=d.size, pad=d.pad, gap=d.gap, anchor=nil ]
+}
+
+;; the background and the padding that a block sets itself
+func Slides.own_bg (n) {
+    if Slides.istab(n) && n.color {
+        n.color.bg
+    } else {
+        nil
+    }
+}
+
+func Slides.own_pad (n) {
+    if Slides.istab(n) && n.cell && (n.cell.pad != nil) {
+        n.cell.pad * Slides.H
+    } else {
+        0
+    }
+}
+
+;; ------------------------------------------------------------------------
+;; GEOMETRY
+;; ------------------------------------------------------------------------
+
+func Slides.anc (a) {
+    if Slides.istab(a) {
+        return a.x, a.y
+    }
+    ifs {
+        a == :NW => (0,   0)
+        a == :N  => (0.5, 0)
+        a == :NE => (1,   0)
+        a == :W  => (0,   0.5)
+        a == :E  => (1,   0.5)
+        a == :SW => (0,   1)
+        a == :S  => (0.5, 1)
+        a == :SE => (1,   1)
+        else     => (0.5, 0.5)
+    }
+}
+
+func Slides.shrink (R, p) {
+    [ x=R.x+p, y=R.y+p, w=math.max(0, R.w-2*p), h=math.max(0, R.h-2*p) ]
+}
+
+;; Where a box of `bw` x `bh` goes in the rectangle `R`: at the position
+;; of its `rect`, or else at its anchor. Evaluates to the corner of the
+;; box, and to the horizontal part of the anchor that was used.
+func Slides.place (R, bw, bh, rect, anchor, dflt) {
+    if rect && (rect.x != nil) {
+        val ax, ay = Slides.anc(rect.anchor)
+        return R.x + rect.x*R.w - ax*bw, R.y + rect.y*R.h - ay*bh, ax
+    }
+    val ax, ay = Slides.anc(anchor || dflt)
+    return R.x + ax*(R.w-bw), R.y + ay*(R.h-bh), ax
+}
+
+;; moves a frame and all inside it
+func Slides.shift (f, dx, dy) {
+    set f.x = f.x + dx
+    set f.y = f.y + dy
+    if f.lines {
+        loop i in #f.lines {
+            val l = f.lines@i
+            set l.x = l.x + dx
+            set l.y = l.y + dy
+        }
+    }
+    if f.dots {
+        loop i in #f.dots {
+            val d = f.dots@i
+            set d.x = d.x + dx
+            set d.y = d.y + dy
+        }
+    }
+    if f.img {
+        set f.img.x = f.img.x + dx
+        set f.img.y = f.img.y + dy
+    }
+    if f.kids {
+        loop i in #f.kids {
+            Slides.shift(f.kids@i, dx, dy)
+        }
+    }
+}
+
+;; ------------------------------------------------------------------------
+;; TEXT
+;; ------------------------------------------------------------------------
+
+func Slides.pencil_font (file) {
+    pico.set.pencil [ font=(file || true), smooth=true ]
+}
+
+func Slides.cell_h (pt) {
+    pico.get.text(['!', h=pt], "Ag").h
+}
+
+;; The point size whose line has the height `h`, in pixels, in the
+;; current font: pico takes a point size, and its line is higher.
+func Slides.pt (file, h) {
+    val hh = math.max(2, math.floor(h))
+    val key = (file || "") ++ ":" ++ hh
+    val old = Slides.pts@(key)
+    if old {
+        return old
+    }
+    Slides.pencil_font(file)
+    var pt = math.max(1, (hh*hh) // Slides.cell_h(hh))
+    loop {
+        until (pt <= 1) || (Slides.cell_h(pt) <= hh)
+        set pt = pt - 1
+    }
+    set Slides.pts@(key) = pt
+    pt
+}
+
+func Slides.text_w (pt, s) {
+    if s == "" {
+        0
+    } else {
+        pico.get.text(['!', h=pt], s).w
+    }
+}
+
+;; Breaks a string into lines that fit in `maxw`, with lines of height
+;; `h`. Evaluates to [w=, h=, pt=, pitch=, lines=[[s=, w=], ...]], with
+;; the dimension of the block. A word wider than `maxw` stays alone in a
+;; line, wider than the block allows: the caller checks `w`. The blanks
+;; between words are not kept, but those that start a line are.
+func Slides.wrap (str, file, h, maxw) {
+    val pt = Slides.pt(file, h)
+    Slides.pencil_font(file)
+    val pitch = math.floor(h)
+    val out = [ w=0, h=0, pt=pt, pitch=pitch, lines=[] ]
+    val pars = string.split(str, "\n")
+    val one = Slides.text_w(pt, "xx")
+    loop i in #pars {
+        ;; the blanks that start a line are kept, as an indentation
+        var ind = 0
+        loop {
+            until string.sub(pars@i, ind, ind) != " "
+            set ind = ind + 1
+        }
+        val dx = if ind == 0 => 0 =>
+            (Slides.text_w(pt, "x" ++ string.rep(" ", ind) ++ "x") - one)
+        val words = string.split(pars@i)
+        var cur = ""
+        var curw = 0
+        loop j in #words {
+            val word = words@j
+            if word == "" {
+                skip
+            }
+            val try = if cur == "" => word => (cur ++ " " ++ word)
+            val w = dx + Slides.text_w(pt, try)
+            if (w <= maxw) || (cur == "") {
+                set cur = try
+                set curw = w
+            } else {
+                set out.lines@+ = [ s=cur, w=curw, dx=dx ]
+                set cur = word
+                set curw = dx + Slides.text_w(pt, word)
+            }
+        }
+        set out.lines@+ = [ s=cur, w=curw, dx=(if cur == "" => 0 => dx) ]
+    }
+    loop i in #out.lines {
+        set out.w = math.max(out.w, out.lines@i.w)
+    }
+    set out.h = #out.lines * pitch
+    out
+}
+
+;; Sets the position of each line of a wrapped block whose corner is at
+;; (x,y): `ax` aligns the lines inside the block.
+func Slides.lines_at (blk, x, y, ax) {
+    loop i in #blk.lines {
+        val l = blk.lines@i
+        set l.x = math.floor(x + ax*(blk.w - l.w) + l.dx)
+        set l.y = math.floor(y + i*blk.pitch)
+    }
+}
+
+func Slides.overflow (loc, what, by) {
+    Slides.err(loc, "text does not fit : " ++ what ++ " exceeds by " ++
+        math.ceil(by) ++ "px")
+}
+
+;; ------------------------------------------------------------------------
+;; LAYOUT
+;; ------------------------------------------------------------------------
+
+;; A text in the rectangle `R`. `n` is the :text node, or nil for a
+;; plain string.
+func Slides.lay_text (str, n, R, up, loc) {
+    val st = Slides.style(up, n)
+    val rect = Slides.istab(n) && n.rect
+    val I = Slides.shrink(R, Slides.own_pad(n))
+    val h = if rect && rect.h => rect.h*I.h => st.size*Slides.H
+    val maxw = if rect && rect.w => rect.w*I.w => I.w
+    val blk = Slides.wrap(str, st.file, h, maxw)
+    val x, y, ax = Slides.place(I, blk.w, blk.h, rect, st.anchor, :C)
+    if blk.w > I.w + 0.5 {
+        Slides.overflow(loc, "width", blk.w - I.w)
+    }
+    if blk.h > I.h + 0.5 {
+        Slides.overflow(loc, "height", blk.h - I.h)
+    }
+    Slides.lines_at(blk, x, y, ax)
+    [
+        x=R.x, y=R.y, w=R.w, h=R.h, bg=Slides.own_bg(n),
+        lines=blk.lines, pt=blk.pt, fg=st.fg, file=st.file,
+    ]
+}
+
+;; An image in the rectangle `R`. With `fill`, the size in its `rect`
+;; was already used by who gave the rectangle.
+func Slides.lay_image (n, R, up, loc, fill) {
+    val st = Slides.style(up, n)
+    val rect = n.rect
+    val I = Slides.shrink(R, Slides.own_pad(n))
+    val d = pico.get.image(n@0)
+    val rw = !fill && rect && rect.w
+    val rh = !fill && rect && rect.h
+    var w
+    var h
+    ifs {
+        rw && rh => {
+            set w = rw*I.w
+            set h = rh*I.h
+        }
+        rw => {
+            set w = rw*I.w
+            set h = w*d.h/d.w
+        }
+        rh => {
+            set h = rh*I.h
+            set w = h*d.w/d.h
+        }
+        else => {
+            val k = math.min(I.w/d.w, I.h/d.h)
+            set w = d.w*k
+            set h = d.h*k
+        }
+    }
+    val x, y = Slides.place(I, w, h, rect, st.anchor, :C)
+    [
+        x=R.x, y=R.y, w=R.w, h=R.h, bg=Slides.own_bg(n),
+        img=[ path=n@0, x=math.floor(x), y=math.floor(y),
+              w=math.max(1,math.floor(w)), h=math.max(1,math.floor(h)) ],
+    ]
+}
+
+;; the rectangle of a composite inside the one it received
+func Slides.box (n, R, st) {
+    val rect = n.rect
+    val w = if rect && rect.w => rect.w*R.w => R.w
+    val h = if rect && rect.h => rect.h*R.h => R.h
+    val x, y = Slides.place(R, w, h, rect, st.anchor, :C)
+    [ x=x, y=y, w=w, h=h ]
+}
+
+func Slides.span (n) {
+    if Slides.istab(n) && n.span {
+        n.span
+    } else {
+        1
+    }
+}
+
+;; Splits `I` among the blocks `n@from..`, in a row or in a column.
+func Slides.lay_split (n, from, I, st, loc, row) {
+    val kids = []
+    val cnt = #n - from
+    if cnt <= 0 {
+        return kids
+    }
+    val gap = st.gap * Slides.H
+    var sum = 0
+    loop i in (from, #n-1) {
+        set sum = sum + Slides.span(n@i)
+    }
+    val all = (if row => I.w => I.h) - gap*(cnt-1)
+    var pos = if row => I.x => I.y
+    loop i in (from, #n-1) {
+        val k = n@i
+        val len = all * Slides.span(k) / sum
+        val R = if row {
+            [ x=pos, y=I.y, w=len, h=I.h ]
+        } else {
+            [ x=I.x, y=pos, w=I.w, h=len ]
+        }
+        set kids@+ = Slides.lay(k, R, st, Slides.sub(loc, i, k))
+        set pos = pos + len + gap
+    }
+    kids
+}
+
+;; A list with its corner at (x,y), `maxw` wide: each item has the
+;; height of its content. `Hc` is the height that the `rect.h` of an
+;; item that is not a text refers to. Evaluates to a frame with the
+;; dimension that the list takes.
+func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
+    val line = math.floor(st.size * Slides.H)
+    val indent = math.floor(line * 1.2)
+    val gap = st.gap * Slides.H
+    val out = [ x=x, y=y, w=0, h=0, bg=nil, kids=[], dots=[], fg=st.fg ]
+    var cy = y
+    loop i in #n {
+        val k = n@i
+        val me = Slides.sub(loc, i, k)
+        val ktag = if Slides.isstr(k) => :text => k.tag
+        val ix = x + indent
+        val iw = maxw - indent
+        var f
+        var first = line        ;; the height of the first line of the item
+        ifs {
+            ktag == :text => {
+                val str = if Slides.isstr(k) => k => k@0
+                val ist = Slides.style(st, k)
+                if Slides.istab(k) && k.rect {
+                    Slides.err(me, "rect is not supported in a text of a :List")
+                }
+                val blk = Slides.wrap(str, ist.file, ist.size*Slides.H, iw)
+                if blk.w > iw + 0.5 {
+                    Slides.overflow(me, "width", blk.w - iw)
+                }
+                Slides.lines_at(blk, ix, cy, 0)
+                set first = blk.pitch
+                set f = [
+                    x=ix, y=cy, w=blk.w, h=blk.h, bg=nil,
+                    lines=blk.lines, pt=blk.pt, fg=ist.fg, file=ist.file,
+                ]
+            }
+            ktag == :List => {
+                set f = Slides.lay_list_at(k, Slides.style(st, k), ix, cy, iw, Hc, me)
+            }
+            else => {
+                if !(k.rect && k.rect.h) {
+                    Slides.err(me, "a :" ++ k.tag ++ " in a :List needs a height (rect.h)")
+                }
+                val h = k.rect.h * Hc
+                val ist = Slides.style(st, nil)
+                if ist.anchor == nil {
+                    set ist.anchor = :NW
+                }
+                if k.tag == :image {
+                    set f = Slides.lay_image(k, [x=ix, y=cy, w=iw, h=h], ist, me, true)
+                    set f.w = f.img.w
+                } else {
+                    val kst = Slides.style(ist, k)
+                    val I = Slides.shrink([x=ix, y=cy, w=iw, h=h], Slides.own_pad(k))
+                    set f = [
+                        x=ix, y=cy, w=iw, h=h, bg=Slides.own_bg(k),
+                        kids=Slides.lay_split(k, 0, I, kst, me, k.tag == :Row),
+                    ]
+                }
+                set first = h
+            }
+        }
+        if ktag != :List {
+            val d = math.max(2, math.floor(line * 0.3))
+            set out.dots@+ = [
+                x = math.floor(x + (indent-d)/2),
+                y = math.floor(cy + (math.min(first,line)-d)/2),
+                d = d,
+            ]
+        }
+        set out.kids@+ = f
+        set out.w = math.max(out.w, indent + f.w)
+        set cy = cy + f.h + gap
+    }
+    set out.h = math.max(0, cy - gap - y)
+    out
+}
+
+func Slides.lay_list (n, R, up, loc) {
+    val st = Slides.style(up, n)
+    val B = Slides.box(n, R, st)
+    val I = Slides.shrink(B, Slides.own_pad(n))
+    val f = Slides.lay_list_at(n, st, 0, 0, I.w, I.h, loc)
+    if f.h > I.h + 0.5 {
+        Slides.overflow(loc, "height", f.h - I.h)
+    }
+    val ax, ay = Slides.anc(st.anchor || :NW)
+    Slides.shift(f, math.floor(I.x + ax*(I.w-f.w)), math.floor(I.y + ay*(I.h-f.h)))
+    [ x=B.x, y=B.y, w=B.w, h=B.h, bg=Slides.own_bg(n), kids=[f] ]
+}
+
+;; Resolves the block `n` in the rectangle `R`, with the style `up` of
+;; its parent. Evaluates to its frame.
+func Slides.lay (n, R, up, loc) {
+    if Slides.isstr(n) {
+        return Slides.lay_text(n, nil, R, up, loc)
+    }
+    val me = loc
+    ifs {
+        n.tag == :text  => Slides.lay_text(n@0, n, R, up, me)
+        n.tag == :image => Slides.lay_image(n, R, up, me, false)
+        n.tag == :List  => Slides.lay_list(n, R, up, me)
+        else => {
+            val st = Slides.style(up, n)
+            val B = Slides.box(n, R, st)
+            val I = Slides.shrink(B, Slides.own_pad(n))
+            [
+                x=B.x, y=B.y, w=B.w, h=B.h, bg=Slides.own_bg(n),
+                kids=Slides.lay_split(n, 0, I, st, loc, n.tag == :Row),
+            ]
+        }
+    }
+}
+
+;; A slide: its background, the band of its title, and its body, which
+;; stacks the children as a column.
+func Slides.lay_slide (n, up, loc) {
+    val st = Slides.style(up, n)
+    val W = Slides.W
+    val H = Slides.H
+    val out = [ x=0, y=0, w=W, h=H, bg=st.bg, kids=[] ]
+    val I = Slides.shrink([x=0, y=0, w=W, h=H], st.pad*H)
+    var top = I.y
+    if n.title != nil {
+        val tn = if Slides.istab(n.title) => n.title => nil
+        val str = if tn => tn@0 => n.title
+        val tst = Slides.style(st, nil)
+        if !(tn && tn.font && tn.font.size) {
+            set tst.size = st.size * Slides.dflt.title
+        }
+        if !(tn && tn.anchor) {
+            set tst.anchor = :N
+        }
+        val tts = Slides.style(tst, tn)
+        val blk = Slides.wrap(str, tts.file, tts.size*H, I.w)
+        val me = loc ++ " > title"
+        if blk.w > I.w + 0.5 {
+            Slides.overflow(me, "width", blk.w - I.w)
+        }
+        val ax = Slides.anc(tts.anchor)
+        Slides.lines_at(blk, I.x + ax*(I.w-blk.w), I.y, ax)
+        set out.kids@+ = [
+            x=I.x, y=I.y, w=I.w, h=blk.h, bg=Slides.own_bg(tn),
+            lines=blk.lines, pt=blk.pt, fg=tts.fg, file=tts.file,
+        ]
+        set top = I.y + blk.h + st.gap*H
+        if top > I.y + I.h + 0.5 {
+            Slides.overflow(me, "height", top - (I.y+I.h))
+        }
+    }
+    val body = [ x=I.x, y=top, w=I.w, h=math.max(0, I.y+I.h-top) ]
+    ;; the pad of the slide is its own: the blocks do not get it
+    set st.pad = 0
+    val kids = Slides.lay_split(n, 0, body, st, loc, false)
+    loop i in #kids {
+        set out.kids@+ = kids@i
+    }
+    out
+}
+
+;; The slides of the document, in order, each with the style that it
+;; receives and the title of its section.
+func Slides.flat (doc) {
+    val out = []
+    val root = Slides.style(Slides.root(), doc)
+    loop i in #doc {
+        val s = doc@i
+        if s.tag == :Slide {
+            set out@+ = [ n=s, up=root, section=nil ]
+        } else {
+            val sst = Slides.style(root, s)
+            loop j in #s {
+                set out@+ = [ n=s@j, up=sst, section=s.title ]
+            }
+        }
+    }
+    out
+}
+
+;; Resolves all slides for a world of `w` x `h` pixels. Evaluates to a
+;; vector with the frame of each slide. A text that does not fit is an
+;; error here, before any slide is shown.
+func Slides.layout (doc, w, h) {
+    set Slides.W = w
+    set Slides.H = h
+    val flat = Slides.flat(doc)
+    val out = []
+    loop i in #flat {
+        set out@+ = Slides.lay_slide(flat@i.n, flat@i.up, "slide " ++ (i+1))
+    }
+    out
+}
+
+;; ------------------------------------------------------------------------
+;; PLAY
+;; ------------------------------------------------------------------------
+
+func Slides.draw (f) {
+    if f.bg != nil {
+        pico.set.pencil [ color=f.bg, style=:fill ]
+        pico.output.draw.rect ['!', x=math.floor(f.x), y=math.floor(f.y),
+            w=math.ceil(f.w), h=math.ceil(f.h), anchor=:NW]
+    }
+    if f.img {
+        val i = f.img
+        pico.output.draw.image(i.path, ['!', x=i.x, y=i.y, w=i.w, h=i.h, anchor=:NW])
+    }
+    if f.lines {
+        pico.set.pencil [ color=f.fg, font=(f.file || true), smooth=true ]
+        loop i in #f.lines {
+            val l = f.lines@i
+            if l.s != "" {
+                pico.output.draw.text(l.s, ['!', x=l.x, y=l.y, h=f.pt, anchor=:NW])
+            }
+        }
+    }
+    if f.dots {
+        pico.set.pencil [ color=f.fg, style=:fill ]
+        loop i in #f.dots {
+            val d = f.dots@i
+            pico.output.draw.oval ['!', x=d.x, y=d.y, w=d.d, h=d.d, anchor=:NW]
+        }
+    }
+}
+
+;; A frame is a task: it draws what is its own, and holds the tasks of
+;; the frames inside it, which draw over it.
+task Slides.Frame (f) {
+    spawn {
+        loop on :draw {
+            Slides.draw(f)
+        }
+    }
+    pin kids = tasks()
+    if f.kids {
+        loop i in #f.kids {
+            spawn @kids Slides.Frame(f.kids@i)
+        }
+    }
+    await(false)
+}
+
+;; Sets the dimension of the world from the window and the `aspect` of
+;; the document. Evaluates to its width and height.
+func Slides.world (doc) {
+    pico.set.layer(pico.layer.window)
+    val win = pico.get.scene().dim
+    pico.set.layer(pico.layer.world)
+    var w = win.w
+    var h = win.h
+    if doc.aspect {
+        val a = doc.aspect@0 / doc.aspect@1
+        if w/h > a {
+            set w = math.floor(h*a)
+        } else {
+            set h = math.floor(w/a)
+        }
+    }
+    pico.set.scene [ dim=['!', w=w, h=h], fit=(doc.fit || :stretch) ]
+    return w, h
+}
+
+;; Shows the document: pico must be open. Keys:
+;;   Right, Down, Space, PageDown    next slide
+;;   Left, Up, Backspace, PageUp     previous slide
+;;   Home, End                       first and last slides
+;;   F                               fullscreen
+;;   Escape, Q                       quit
+task Slides.Play (doc) {
+    Slides.check(doc)
+    var cur = 0
+    var fs = false
+    loop {
+        val w, h = Slides.world(doc)
+        pin frames = Slides.layout(doc, w, h)
+        val last = #frames - 1
+        val quit = par :any {
+            await :window.resize
+            false
+        } with {
+            loop {
+                pin slide = spawn Slides.Frame(frames@cur)
+                val go = loop e on :key.dn {
+                    val k = e.key
+                    ifs {
+                        (k=='Right') || (k=='Down') || (k=='Space') || (k=='PageDown') => {
+                            if cur < last {
+                                set cur = cur + 1
+                                break :go
+                            }
+                        }
+                        (k=='Left') || (k=='Up') || (k=='Backspace') || (k=='PageUp') => {
+                            if cur > 0 {
+                                set cur = cur - 1
+                                break :go
+                            }
+                        }
+                        k == 'Home' => {
+                            set cur = 0
+                            break :go
+                        }
+                        k == 'End' => {
+                            set cur = last
+                            break :go
+                        }
+                        k == 'F' => {
+                            set fs = !fs
+                            pico.set.app [ fullscreen=fs ]
+                        }
+                        (k == 'Escape') || (k == 'Q') => {
+                            break :quit
+                        }
+                    }
+                }
+                until go == :quit
+            }
+            true
+        }
+        until quit
+    }
+}
