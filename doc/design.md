@@ -306,8 +306,8 @@ Not decided. The first three were raised and set aside by the author.
 
 - **`X.loadx`** (session `atmos-loadx`, in `ia-atmos/lang`): a loader
   of data that accepts names, so that a value that repeats is written
-  once. Agreed with the author on 2026-11-20 and implemented on the
-  branch `loadx` of `ia-atmos/lang` (not in `main` yet).
+  once. Agreed with the author on 2026-11-20 and in `main` of
+  `ia-atmos/lang` (manual, section "Load with Names").
 
   ```
   Text  : { ID `=´ Value } Value
