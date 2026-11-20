@@ -97,10 +97,21 @@ behaves the same in a slide, in a `:Col`, or as an item of a `:List`.
 - `:Slide` stacks its children as a `:Col` does. A `:Col` is only
   needed inside a `:Row`.
 - `:List` stacks its children, with a marker before each. An item is
-  any block, so a list nests in a list. How its items take the height
-  is [provisional](#provisional).
+  any block, so a list nests in a list.
 
-The parts are equal, unless a child has a `span`.
+In a `:Row`, `:Col`, and `:Slide`, the parts are equal, unless a child
+has a `span`.
+
+In a `:List`, the items go together (#28a):
+
+- Each item has the height of its content, with the `gap` between
+  them.
+- The list goes to the point of its rectangle that its `anchor` gives,
+  and to `:NW` if no node sets one.
+- An item that is not a text (an `:image`, `:Row`, or `:Col`) has no
+  height of its own: it needs `rect=['%', h=]`, relative to the height
+  of the list.
+- Items that pass the height of the rectangle are an error (#16).
 
 ```
 :Slide [ title="Culture",
@@ -169,7 +180,7 @@ with the nine names of pico as tags: `:NW`, `:N`, `:NE`, `:W`, `:C`,
 - The lines of a text with many lines follow its horizontal part
   (`:W` left, `:C` center, `:E` right).
 - The default is `:C` at the root. A `:List` with no anchor set goes at
-  `:NW` ([provisional](#provisional), #28).
+  `:NW` (#28a).
 - `anchor` is the short and inherited form; `rect` is the fine
   adjustment of one node. `anchor=:W` is the same as
   `rect=['%', x=0, y=0.5, anchor=:W]`.
@@ -295,15 +306,13 @@ font  = [ file=STR, size=NUM ]
 ## Provisional
 
 What the first engine chose where nothing was decided, or where it
-departs from a decision. Each waits for the author.
+nothing was said. Each waits for the author.
 
 | Item | Subject | What the engine does |
 |---|---|---|
-| #28 | The items of a `:List` | Each item has the height of its content, with the `gap` between them. The list goes in its rectangle by its `anchor`, which is `:NW` if no node sets one. Proposed as #28a, not answered. |
 | #30 | Default values | `font.size=0.05`, `cell.pad=0.04` (the margin of a slide), `cell.gap=0.02`, `color=[fg=:black, bg=:white]`, a window of `960x540`. |
 | #31 | The style of a title | 1.5 times the size of the text of its slide, centered at the top (`:N`). A `:text` as `title` sets its own `font`, `color`, and `anchor`. |
 | #32 | The marker of a `:List` | A dot, drawn (not a character), so that it does not depend on the font. No field chooses it yet. |
-| #33 | An item of a `:List` that is not a text | An `:image`, `:Row`, or `:Col` needs `rect=['%', h=]`, relative to the height of the list: it has no height of its own. A `rect` in a text of a list is refused. |
 | #34 | Blanks in a text | A text breaks between words, and the blanks between them collapse. The blanks that start a line are kept, as an indentation. |
 | #35 | The height of a line | The size of a font is the height of a line, glyphs and leading together, so that `n` lines take exactly `n` times the size. |
 | #36 | The keys | Right, Down, Space, PageDown: next. Left, Up, Backspace, PageUp: previous. Home, End. F: fullscreen. Escape, Q: quit. |
