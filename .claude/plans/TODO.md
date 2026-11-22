@@ -13,7 +13,6 @@ By the session, to be confirmed (each is reversible):
 
 | Item | What was done | To undo |
 |---|---|---|
-| #42 | In a PDF, a page is a slide with all its steps shown; `--steps` gives a page for each step | the default in `slides` |
 | - | The dot of an item of a list has the color of the text of the item | one line in `Slides.lay_list_at` |
 
 Open, with no recommendation acted on:
@@ -64,7 +63,7 @@ Open, with no recommendation acted on:
 | #39 | Confirm #6a and #11a | yes |
 | #40 | Answer `atmos-loadx` and `env-pico` | yes, sent |
 | #41 | A PDF | #41a, an image of each slide |
-| #42 | A page for a slide or for a step | by the session: a slide, `--steps` for each step |
+| #42 | A page for a slide or for a step | a slide by default, `--steps` for each step; confirmed |
 
 ## Known, not done
 

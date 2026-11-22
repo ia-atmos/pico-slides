@@ -405,7 +405,7 @@ images is a choice (`1920x1080` if absent). The text is not selectable.
 A vectorial PDF, from the same frames, is a later option (#41b).
 
 A page is a slide with all its steps shown, or each step with
-`--steps` (this default was chosen by the session, to be confirmed).
+`--steps` (#42).
 
 A document is played from a file of data, read with `X.loadx`
 (`./slides file`), or from an Atmos program that builds the table and
