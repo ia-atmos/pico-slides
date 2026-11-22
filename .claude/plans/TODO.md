@@ -65,7 +65,7 @@ Open, with no recommendation acted on:
 | #41 | A PDF | #41a, an image of each slide |
 | #42 | A page for a slide or for a step | a slide by default, `--steps` for each step; confirmed |
 | #43 | Next step | nothing for now |
-| #44 | The cache of texts of pico grows at each resize | yes: proposed to env-pico that pico empties it when the dim of a layer changes |
+| #44 | The cache of texts of pico grows at each resize | yes: pico empties it when the dim of a layer changes (env-pico 8a20c464) |
 
 ## Known, not done
 
@@ -77,9 +77,12 @@ Open, with no recommendation acted on:
 - The text of a PDF is not selectable (#41b would give that).
 - `./slides` compiles the engine at each run (a few seconds). A build
   that is kept would start at once.
-- The text layers that pico keeps for each string and size are only
-  released when pico closes: many resizes of a long presentation grow
-  the memory.
+- Memory over many resizes (measured 2026-11-22, `tst/text.slides`,
+  90 resizes): with no display (`atmos-pico -t`), it stays bounded,
+  26 MB at the start and 45 MB at the end. Under `xvfb-run` it grows
+  about 3 MB per resize, also with the cache emptied, and the same
+  growth appears with the old pico: it comes from the graphics driver
+  of the test machine (Mesa), not from pico or from the engine.
 - No word is broken: a word wider than its rectangle is an error.
 - The references of the visual tests depend on the versions of SDL and
   FreeType.
@@ -92,5 +95,5 @@ Open, with no recommendation acted on:
 |---|---|---|
 | `atmos-loadx` (`ia-atmos/lang`) | `X.loadx`, data with names | done, in `main`; used by `src/main.atm` |
 | `env-pico` | `fit` in the scene of a layer | done, in `main`; used by `Slides.world` |
-| `env-pico` | what the engine works around: line breaking (env-pico#13), exact line height (#14), the cache of texts (#15), scripted resize (done) | #12 confirmed; #13, #14 kept as todo there; #15: proposed on 2026-11-22 (#44) that pico empties the cache of texts when the dim of a layer changes; waits for env-pico |
+| `env-pico` | what the engine works around: line breaking (env-pico#13), exact line height (#14), the cache of texts (#15), scripted resize (done) | #12 confirmed; #13, #14 kept as todo there; #15: done in env-pico 8a20c464 (#44): the cache of texts is emptied when the dim of a layer changes |
 | `paper-media` (`ia-atmos/lang`) | asked for the vocabulary when agreed (tags, fields, how time would enter) | not sent: the message was refused by the permissions of this session, and waits for the author to ask for it |
