@@ -227,38 +227,11 @@ Two fields of `:Slides`:
 pico. The resolution is that of the
 window in all cases.
 
-## Steps (#6a, #39)
+## The table of contents (#11a, to be confirmed)
 
-A key that advances shows one more part of a slide before it goes to
-the next one. A block has a field `step`:
-
-```
-:Slide [ title="Requirements",
-    :List [
-        "No empty program",
-        :text ["No reading of its own file", step=1],
-        :text ["Output equal to the source", step=2],
-    ],
-    :image ["quine.png", step=2],
-]
-```
-
-- A block with no `step` shows from the start (step 0).
-- A block with `step=N` shows from the step `N` until the end of the
-  slide.
-- In a composite, the `step` holds for all inside it: a child shows at
-  the latest of its own step and the step of what holds it.
-- A slide has as many steps as the highest `step` in it.
-- The layout does not change: a hidden block already has its
-  rectangle, and nothing moves when it shows.
-- To advance shows the next step, and at the last one goes to the next
-  slide. To go back undoes a step, and at step 0 goes to the previous
-  slide, at its last step. `Home` goes to the first slide at step 0,
-  and `End` to the last slide with all shown.
-
-Not there: a block that hides again at a later step.
-
-## The table of contents (#11a, #39)
+*Chosen by the session from its own recommendation. The author's
+"ok" that was read as #39 most likely answered another question, so
+it waits for his confirmation.*
 
 `:Contents []` is a block that the engine expands into a `:List` with
 the titles of the sections, in order.
@@ -272,7 +245,7 @@ the titles of the sections, in order.
 ```
 
 - It goes wherever a block goes, and takes the fields of a block
-  (`rect`, `span`, `anchor`, `color`, `font`, `cell`, `step`).
+  (`rect`, `span`, `anchor`, `color`, `font`, `cell`).
 - In a slide of a section, the titles of the other sections are
   dimmed (the color of the text mixed with the background).
 - It has no entries.
@@ -309,7 +282,6 @@ font  = [ file=STR, size=NUM ]
 | `title` | `:Slide`, `:Section` | no |
 | `rect` | any block | no |
 | `span` | any child of a composite | no |
-| `step` | any block | to what is inside (the latest holds) |
 | `anchor` | any node | yes |
 | `color=[fg=, bg=]` | any node | yes, field by field |
 | `font=[file=, size=]` | any node | yes, field by field |
@@ -370,7 +342,7 @@ author as a whole (#37).
 | #32 | The marker of a `:List` | A dot, drawn (not a character), so that it does not depend on the font. No field chooses it yet. |
 | #34 | Blanks in a text | A text breaks between words, and the blanks between them collapse. The blanks that start a line are kept, as an indentation. |
 | #35 | The height of a line | The size of a font is the height of a line, glyphs and leading together, so that `n` lines take exactly `n` times the size. |
-| #36 | The keys | Right, Down, Space, PageDown: next (step, then slide). Left, Up, Backspace, PageUp: previous. Home, End. F: fullscreen. Escape, Q: quit. |
+| #36 | The keys | Right, Down, Space, PageDown: next. Left, Up, Backspace, PageUp: previous. Home, End. F: fullscreen. Escape, Q: quit. |
 | - | The marker of an item | The dot of an item has the color of the text of the item. |
 
 ## The engine
@@ -392,7 +364,7 @@ In `src/slides.atm`, in three parts:
   a pool. A key changes the slide, which aborts the tasks of the
   previous one. A `:window.resize` lays everything out again.
 
-- **`Slides.Export(doc, prefix, steps)`** is a task that saves each
+- **`Slides.Export(doc, prefix)`** is a task that saves each
   slide as an image, for the PDF.
 
 ### PDF (#41a)
@@ -404,8 +376,7 @@ is no second renderer to differ from it, and the dimension of the
 images is a choice (`1920x1080` if absent). The text is not selectable.
 A vectorial PDF, from the same frames, is a later option (#41b).
 
-A page is a slide with all its steps shown, or each step with
-`--steps` (#42).
+A page is a slide.
 
 A document is played from a file of data, read with `X.loadx`
 (`./slides file`), or from an Atmos program that builds the table and
@@ -420,7 +391,7 @@ Not decided.
 |---|---|---|
 | - | A key for the table of contents at any time (the `T` of Aurora) | not discussed |
 | - | References (the `Ref` table and the `Reference` slide of Aurora) | not discussed |
-| - | A block that hides at a later step (the `<2-3>` of Beamer) | not discussed |
+| #6 | Steps inside a slide: a block that shows, hides, or changes at a later key | open again (#45): the first version (`step=N`, show from a step on) was removed, to be discussed in depth |
 | - | A style for all titles at once | a name of a theme covers one group; nothing for a whole style (#27a) |
 | - | Modes of `rect` other than `'%'` | not discussed |
 | - | The fields of `:List` (the marker, numbering) | not discussed |

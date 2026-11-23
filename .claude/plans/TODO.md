@@ -13,6 +13,7 @@ By the session, to be confirmed (each is reversible):
 
 | Item | What was done | To undo |
 |---|---|---|
+| #11 | #11a: `:Contents []`, a list of the titles of the sections. Marked as confirmed (#39) from an "ok" that most likely answered #40: back to be confirmed | remove `Slides.lay_contents` and the tag |
 | - | The dot of an item of a list has the color of the text of the item | one line in `Slides.lay_list_at` |
 
 Open, with no recommendation acted on:
@@ -21,7 +22,7 @@ Open, with no recommendation acted on:
 |---|---|---|
 | - | A key for the table of contents at any time (the `T` of Aurora) | not discussed |
 | - | References (the `Ref` and `Reference` of Aurora) | not discussed |
-| - | A block that hides at a later step | not discussed |
+| #6 | Steps inside a slide | open again (#45): the first version (`step=N`) was removed on 2026-11-23, to be discussed in depth (how Beamer, reveal.js, PowerPoint, and Typst do it is in the conversation of that day) |
 | - | The readme: what it says of Aurora and of Presotto, and whether he is told | written in a neutral way, to be reviewed |
 
 ## Index of items
@@ -33,12 +34,12 @@ Open, with no recommendation acted on:
 | #3 | The leaves, `List` and `Table` | #3a, with no `:Table` |
 | #4 | Style | #4a, inherited, in `color=[]` and `font=[]`, colors as tags |
 | #5 | Sections | #5a, `:Section` |
-| #6 | Steps | #6a, confirmed (#39) |
+| #6 | Steps | open again: #6a was implemented and removed (#45) |
 | #7 | Only data, or functions | answered by `X.loadx`: data with names |
 | #8 | Composites of layout | #8a, `:Row` and `:Col`; the slide stacks |
 | #9 | Inheritance in a group | #9a, field by field |
 | #10 | Alignment | #10a, `anchor`, inherited |
-| #11 | The table of contents | #11a, confirmed (#39) |
+| #11 | The table of contents | #11a, implemented, to be confirmed |
 | #12 | The size of a leaf | #12a, an image fits, a text breaks |
 | #13 | Unequal parts | #13a, a weight in the child |
 | #14 | Spaces | #14a, two fields; `gap` inherited, `pad` not (#29) |
@@ -60,12 +61,13 @@ Open, with no recommendation acted on:
 | #30-#36 | Choices of the engine (defaults, title, marker, blanks, line, keys) | confirmed as a whole (#37); #33 went with #28 |
 | #37 | Confirm the choices of the engine | yes |
 | #38 | Next step | #38a, steps |
-| #39 | Confirm #6a and #11a | yes |
+| #39 | Confirm #6a and #11a | read as yes from an "ok" that most likely answered #40; undone (#45) |
 | #40 | Answer `atmos-loadx` and `env-pico` | yes, sent |
 | #41 | A PDF | #41a, an image of each slide |
-| #42 | A page for a slide or for a step | a slide by default, `--steps` for each step; confirmed |
+| #42 | A page for a slide or for a step | a slide; `--steps` removed with steps (#45) |
 | #43 | Next step | nothing for now |
 | #44 | The cache of texts of pico grows at each resize | yes: pico empties it when the dim of a layer changes (env-pico 8a20c464) |
+| #45 | Steps: confirm `step=N`, or revert | revert, and discuss in depth |
 
 ## Known, not done
 

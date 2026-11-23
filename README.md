@@ -31,8 +31,7 @@ nodes, as data, and the engine lays it out and shows it:
 - Colors, fonts, and spaces are inherited down the tree.
 - A text that does not fit in its rectangle is an error, when the
   document is loaded.
-- A block with `step=N` only shows after `N` keys, and `:Contents []`
-  is the table of contents, made from the sections.
+- `:Contents []` is the table of contents, made from the sections.
 - A file may define names for what repeats, and `include` a theme with
   the names that many presentations share.
 
@@ -57,15 +56,15 @@ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev \
 `./slides <file> [<width> <height>]` plays a file of data. The paths in
 the file (images, fonts) are relative to it.
 
-`./slides --pdf <out.pdf> [--steps] <file> [<width> <height>]` saves
+`./slides --pdf <out.pdf> <file> [<width> <height>]` saves
 the presentation as a PDF, with no window: each slide is drawn as on
 the screen and becomes a page, an image of `1920x1080` if no dimension
-is given. With `--steps`, each step of a slide is a page.
+is given.
 
 | Key | Effect |
 |---|---|
-| Right, Down, Space, PageDown | the next step, or the next slide |
-| Left, Up, Backspace, PageUp | the previous step, or the previous slide |
+| Right, Down, Space, PageDown | the next slide |
+| Left, Up, Backspace, PageUp | the previous slide |
 | Home, End | the first and the last slides |
 | F | fullscreen |
 | Escape, Q | quit |
