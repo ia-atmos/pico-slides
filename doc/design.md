@@ -227,6 +227,42 @@ Two fields of `:Slides`:
 pico. The resolution is that of the
 window in all cases.
 
+## Steps: `anim` (#47)
+
+A key that advances shows one more part of a slide before it goes to
+the next one. The field `anim` of a composite says how its children
+appear. Its simplest form is `anim=true`; a table will give other
+options (open).
+
+```
+:Slide [ title="Quine",
+    :List [ anim=true,
+        "A program",
+        "that prints",
+        "its own source",
+    ],
+]
+```
+
+With `anim=true`:
+
+- It goes on a composite: `:List`, `:Row`, `:Col`, `:Contents`, and
+  `:Slide` itself.
+- Its children appear one per key, in order. The first child is
+  visible from the start, with the composite, so a slide never opens
+  on an empty list.
+- The space is reserved: a hidden child already has its rectangle, and
+  nothing moves when it appears.
+- A child that also has `anim=true` steps through its own children
+  before its parent goes on, in reading order.
+- Several on a slide run one after the other, in reading order: the
+  first child of each is visible from the start.
+- To advance shows one more child, and at the end goes to the next
+  slide. To go back hides the last one shown, and at the start goes to
+  the previous slide, with all of it shown. `Home` goes to the first
+  slide at its start, and `End` to the last slide with all shown.
+- A page of the PDF is a slide with all shown.
+
 ## The table of contents (#11a, to be confirmed)
 
 *Chosen by the session from its own recommendation. The author's
@@ -245,7 +281,7 @@ the titles of the sections, in order.
 ```
 
 - It goes wherever a block goes, and takes the fields of a block
-  (`rect`, `span`, `anchor`, `color`, `font`, `cell`).
+  (`rect`, `span`, `anchor`, `anim`, `color`, `font`, `cell`).
 - In a slide of a section, the titles of the other sections are
   dimmed (the color of the text mixed with the background).
 - It has no entries.
@@ -282,6 +318,7 @@ font  = [ file=STR, size=NUM ]
 | `title` | `:Slide`, `:Section` | no |
 | `rect` | any block | no |
 | `span` | any child of a composite | no |
+| `anim=true` | a composite (`:Slide`, `:Row`, `:Col`, `:List`, `:Contents`) | no |
 | `anchor` | any node | yes |
 | `color=[fg=, bg=]` | any node | yes, field by field |
 | `font=[file=, size=]` | any node | yes, field by field |
@@ -342,7 +379,7 @@ author as a whole (#37).
 | #32 | The marker of a `:List` | A dot, drawn (not a character), so that it does not depend on the font. No field chooses it yet. |
 | #34 | Blanks in a text | A text breaks between words, and the blanks between them collapse. The blanks that start a line are kept, as an indentation. |
 | #35 | The height of a line | The size of a font is the height of a line, glyphs and leading together, so that `n` lines take exactly `n` times the size. |
-| #36 | The keys | Right, Down, Space, PageDown: next. Left, Up, Backspace, PageUp: previous. Home, End. F: fullscreen. Escape, Q: quit. |
+| #36 | The keys | Right, Down, Space, PageDown: next (step, then slide). Left, Up, Backspace, PageUp: previous. Home, End. F: fullscreen. Escape, Q: quit. |
 | - | The marker of an item | The dot of an item has the color of the text of the item. |
 
 ## The engine
@@ -391,7 +428,7 @@ Not decided.
 |---|---|---|
 | - | A key for the table of contents at any time (the `T` of Aurora) | not discussed |
 | - | References (the `Ref` table and the `Reference` slide of Aurora) | not discussed |
-| #6 | Steps inside a slide: a block that shows, hides, or changes at a later key | open again (#45): the first version (`step=N`, show from a step on) was removed, to be discussed in depth |
+| #6 | Steps: the table form of `anim` (a block that disappears, is shown only at some keys, or is highlighted; explicit order) | open; `anim=true` is done (#47) |
 | - | A style for all titles at once | a name of a theme covers one group; nothing for a whole style (#27a) |
 | - | Modes of `rect` other than `'%'` | not discussed |
 | - | The fields of `:List` (the marker, numbering) | not discussed |

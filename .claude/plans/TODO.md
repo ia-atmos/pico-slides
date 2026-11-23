@@ -22,7 +22,7 @@ Open, with no recommendation acted on:
 |---|---|---|
 | - | A key for the table of contents at any time (the `T` of Aurora) | not discussed |
 | - | References (the `Ref` and `Reference` of Aurora) | not discussed |
-| #6 | Steps inside a slide | open again (#45): the first version (`step=N`) was removed on 2026-11-23, to be discussed in depth (how Beamer, reveal.js, PowerPoint, and Typst do it is in the conversation of that day) |
+| #6 | Steps: the table form of `anim` | to discuss: a block that disappears, is shown only at some keys, or is highlighted; an explicit order |
 | - | The readme: what it says of Aurora and of Presotto, and whether he is told | written in a neutral way, to be reviewed |
 
 ## Index of items
@@ -34,7 +34,7 @@ Open, with no recommendation acted on:
 | #3 | The leaves, `List` and `Table` | #3a, with no `:Table` |
 | #4 | Style | #4a, inherited, in `color=[]` and `font=[]`, colors as tags |
 | #5 | Sections | #5a, `:Section` |
-| #6 | Steps | open again: #6a was implemented and removed (#45) |
+| #6 | Steps | #6a implemented and removed (#45); `anim=true` instead (#47) |
 | #7 | Only data, or functions | answered by `X.loadx`: data with names |
 | #8 | Composites of layout | #8a, `:Row` and `:Col`; the slide stacks |
 | #9 | Inheritance in a group | #9a, field by field |
@@ -68,6 +68,8 @@ Open, with no recommendation acted on:
 | #43 | Next step | nothing for now |
 | #44 | The cache of texts of pico grows at each resize | yes: pico empties it when the dim of a layer changes (env-pico 8a20c464) |
 | #45 | Steps: confirm `step=N`, or revert | revert, and discuss in depth |
+| #46 | What a step can do | superseded by #47 |
+| #47 | `anim=true` in a composite: children one per key, the first from the start, nested in reading order | agreed |
 
 ## Known, not done
 
