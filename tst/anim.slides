@@ -1,0 +1,24 @@
+;; anim=true: the children of a composite appear one per key
+:Slides [
+    font = [file="../res/DejaVuSans.ttf"],
+    :Slide [ title="A list",
+        :Row [
+            :List [ anim=true,
+                "first, from the start",
+                "second",
+                :List [ anim=true, "third: a nested list", "fourth", "fifth" ],
+                "sixth",
+            ],
+            :Col [ anim=true, color=[bg=:silver],
+                "after the list: from the start",
+                :image ["res/square.png"],
+            ],
+        ],
+    ],
+    :Slide [ title="A slide", anim=true,
+        "one",
+        :Row [ "two", "and three", color=[bg=:yellow] ],
+        "four",
+    ],
+    :Slide [ title="No anim", "the last slide" ],
+]
