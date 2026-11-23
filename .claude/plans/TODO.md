@@ -25,6 +25,20 @@ Open, with no recommendation acted on:
 | #6 | Steps: the table form of `anim` | to discuss: a block that disappears, is shown only at some keys, or is highlighted; an explicit order |
 | - | The readme: what it says of Aurora and of Presotto, and whether he is told | written in a neutral way, to be reviewed |
 
+## For Wednesday (2026-11-25), raised by the author on 2026-11-23
+
+Not started; to discuss first.
+
+- #48: `aspect` in the document and `fit` on the command line, or
+  otherwise (recommended: `aspect` in the document, `fit` as an option
+  of `./slides`).
+- Convert the slides of the courses, starting with LP1: where they
+  are, in what format, where the new ones go.
+- `:Box`: a frame around its content.
+- A container with a single element needs no `:Row` or `:Col`.
+- Text or code in many lines with formatting, in the style of
+  Markdown.
+
 ## Index of items
 
 | Item | Subject | State |
