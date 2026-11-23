@@ -1,19 +1,18 @@
 ;; Plays a presentation written as data, or saves it as images:
 ;;
-;;   atmos-pico main.atm <file> [<width> <height> [<prefix> [steps]]]
+;;   atmos-pico main.atm <file> [<width> <height> [<prefix>]]
 ;;
 ;; The file is read with `X.loadx` (see doc/design.md). The paths in it
 ;; (images, fonts) are relative to the current directory. With a
-;; prefix, the slides are saved as `<prefix>0001.png` and so on, and
-;; the program ends: one image for each slide, or for each step of each
-;; slide if the last argument is `steps`.
+;; prefix, the slides are saved as `<prefix>0001.png` and so on, one
+;; image for each slide, and the program ends.
 
 include "slides.atm"
 
-val path, w, h, prefix, steps = ...
+val path, w, h, prefix = ...
 
 if path == nil {
-    print("usage: main.atm <file> [<width> <height> [<prefix> [steps]]]")
+    print("usage: main.atm <file> [<width> <height> [<prefix>]]")
     os.exit(1)
 }
 
@@ -40,6 +39,6 @@ if prefix == nil {
     await Slides.Play(doc)
 } else {
     pico.set.expert(true, true)         ;; as fast as possible
-    val n = await Slides.Export(doc, prefix, steps == "steps")
+    val n = await Slides.Export(doc, prefix)
     print("slides : " ++ n ++ " pages")
 }

@@ -12,7 +12,6 @@ shots contents contents.slides 960 540  8 4:dn:Right,6:dn:Right             2 5 
 shots theme    theme.slides    960 540  3 -                                 2
 shots builtin  builtin.slides  640 360  3 -                                 2
 shots square   layout.slides   500 500  3 -                                 2
-shots steps    steps.slides    960 540 20 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:Right,11:dn:Right,13:dn:Left,15:dn:Left,17:dn:End,18:dn:Home  2 4 6 8 10 12 14 16 19
 
 # a resize of the window lays out again
 RESIZE=3:500:500
@@ -33,7 +32,6 @@ refuse bad-color        "slides : slide 1 > 0:text : invalid color.fg : expected
 refuse bad-anchor       "slides : slide 1 : invalid anchor"
 refuse bad-rect         "slides : slide 1 > 0:text : invalid rect : expected both x and y, or none"
 refuse bad-rect-mode    "slides : slide 1 > 0:text : invalid rect : expected ['%', ...]"
-refuse bad-step         "slides : slide 1 > 0:text : invalid step : expected integer from 0"
 refuse contents-entries "slides : slide 1 > 0:Contents : expected no entries"
 refuse bad-span         "slides : slide 1 > 0:text : invalid span"
 refuse bad-aspect       "slides : :Slides : invalid aspect : expected [w, h]"
@@ -49,7 +47,6 @@ refuse not-slides       "slides : document : expected :Slides [...]"
 refuse list-image       "slides : slide 1 > 0:List > 1:image : a :image in a :List needs a height (rect.h)"
 refuse undefined-name   "invalid load : line 1 : undefined name : LOGO"
 
-# PDF: a page for each slide, or for each step
+# PDF: a page for each slide
 pdf pdf-tour   7 ../exs/tour/tour.slides
-pdf pdf-slides 2 steps.slides 640 360
-pdf pdf-steps  5 --steps steps.slides 640 360
+pdf pdf-slides 4 sections.slides 640 360
