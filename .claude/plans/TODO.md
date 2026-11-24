@@ -48,6 +48,13 @@ Raised on 2026-11-24, for later:
 - A `:Section` would show the table of contents at its start, unless
   `toc=false`. To decide: the default, where `toc` goes (section or
   document), and what that slide looks like.
+- Overlays: arrows, rectangles, and texts drawn over the objects of a
+  slide, for animations. Needs a way to identify an object (a name or
+  an id) to point at it.
+- `step` comes back in some form, as the field of a child, which may
+  resolve the ambiguity of `anim=false` above: `step=false` would show
+  the object from the start of its parent. A step may be local (in the
+  sequence of its parent) or global (of the slide).
 
 ## Index of items
 
