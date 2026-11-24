@@ -39,6 +39,16 @@ Not started; to discuss first.
 - Text or code in many lines with formatting, in the style of
   Markdown.
 
+Raised on 2026-11-24, for later:
+
+- `anim=true` would hide the first child too; a child with
+  `anim=false` would show from the start. Conflict to resolve: on a
+  composite child, `anim=false` already means "my children do not
+  step".
+- A `:Section` would show the table of contents at its start, unless
+  `toc=false`. To decide: the default, where `toc` goes (section or
+  document), and what that slide looks like.
+
 ## Index of items
 
 | Item | Subject | State |
