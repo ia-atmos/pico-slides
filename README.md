@@ -29,8 +29,9 @@ nodes, as data, and the engine lays it out and shows it:
 - A node receives a rectangle from its parent, and places itself in it
   with the anchors and the relative rectangles of pico.
 - Colors, fonts, and spaces are inherited down the tree.
-- A text that does not fit in its rectangle is an error, when the
-  document is loaded.
+- A text keeps its lines and blanks as written, so code keeps its
+  indentation; `wrap=true` breaks long lines of prose. A text that does
+  not fit in its rectangle is an error, when the document is loaded.
 - `anim=true` in a composite makes its children appear one per key,
   and `:Contents []` is the table of contents, made from the sections.
 - A file may define names for what repeats, and `include` a theme with

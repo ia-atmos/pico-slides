@@ -20,7 +20,7 @@ recommendation. Listed on 2026-11-25.
 | #50 | Convert the slides of the courses, starting with LP1 | pilot done by hand (#62a): `exs/lp1/lp1-02-c.slides`, 9 slides. Missing for a faithful copy: keywords in bold (#53), boxes that fit their code (#64), the balloon of slide 8 (#57), the gradient of the background |
 | #51 | `:Box`: a frame around its content | done: `:Box [ border=[size=, color=], <one block> ]` |
 | #52 | A container with a single element needs no `:Row` or `:Col` | done: a `:Box` with no `border` |
-| #53 | Text or code in many lines with Markdown-like formatting | in steps: `**bold**`, `*italic*`, and `` `code` `` inside a text, then blocks of code in a monospace font; no syntax highlighting at first |
+| #53 | Formatted text: `**bold**`, `*italic*`, `` `code` `` inside a text | #53a agreed in principle; with #65b a block of code needs no markup (a text keeps its blanks); open: the tag (`:md`) and the group of fonts (`font=[bold=, italic=, mono=]`) |
 | #54 | `anim=true` would hide the first child too, with a per-child way to show it from the start | decide together with #55, which gives that per-child field |
 | #55 | `step` back, as a field of a child: `step=false` shows it with its parent; a step local (in the parent's sequence) or global (of the slide) | `step=false` and a local `step=N` first; global steps when overlays (#57) need them |
 | #56 | A `:Section` shows the table of contents at its start, unless `toc=false` | off by default, turned on with `toc=true` in `:Slides` or in a `:Section`, so documents do not gain slides nobody wrote |
@@ -32,6 +32,7 @@ recommendation. Listed on 2026-11-25.
 | #62 | How to convert LP1: by hand or with a converter of `.fodp` | #62a, by hand, the class of C as a pilot |
 | #63 | Formatted text (#53): in pico or in the engine | the engine, over pico as it is (fonts by file for bold and italic); confirmed 2026-11-25 |
 | #64 | A `:Box` with a border fills the rectangle it receives; in LP1 each box fits its code | to discuss: a box that takes the size of its content |
+| #65 | Automatic line breaking (#12a) | #65b: off by default, `wrap=true` (inherited) turns it on; with no wrap, lines and blanks are as written; done |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.

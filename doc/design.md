@@ -157,13 +157,18 @@ inherited.
 ]
 ```
 
-### The size of a leaf (#12a, #18a)
+### The size of a leaf (#12a, #18a, #65b)
 
 - An **image** grows or shrinks until it fits whole in its rectangle,
   with its proportion kept. A `rect` with `w` or `h` reduces it.
 - A **text** has the size of its font, which does not change with the
-  amount of text. Its lines break at the width of the rectangle, and
-  the breaks written in the string are kept.
+  amount of text. Its lines are the ones written in the string, as
+  they are, blanks included, so code keeps its indentation and its
+  columns (#65). A line wider than the rectangle is an error (#16).
+- `wrap=true` (inherited, like `anchor`) also breaks a line between
+  words, to fit the width of the rectangle. Then the blanks between
+  words collapse, and those that start a line are kept, as an
+  indentation (#34). It is meant for paragraphs of prose.
 - In the `rect` of a text, `h` is the height of **one line**, relative
   to the rectangle received, as in pico. It applies to that node only
   and prevails over `font=[size=]`.
@@ -333,6 +338,7 @@ font  = [ file=STR, size=NUM ]
 | `span` | any child of a composite | no |
 | `anim=true` | a composite (`:Slide`, `:Row`, `:Col`, `:List`, `:Contents`) | no |
 | `anchor` | any node | yes |
+| `wrap=true` | any node | yes |
 | `color=[fg=, bg=]` | any node | yes, field by field |
 | `font=[file=, size=]` | any node | yes, field by field |
 | `cell=[gap=]` | any node | yes |
@@ -390,7 +396,7 @@ author as a whole (#37).
 | #30 | Default values | `font.size=0.05`, `cell.pad=0.04` (the margin of a slide), `cell.gap=0.02`, `color=[fg=:black, bg=:white]`, a window of `960x540`. |
 | #31 | The style of a title | 1.5 times the size of the text of its slide, centered at the top (`:N`). A `:text` as `title` sets its own `font`, `color`, and `anchor`. |
 | #32 | The marker of a `:List` | A dot, drawn (not a character), so that it does not depend on the font. No field chooses it yet. |
-| #34 | Blanks in a text | A text breaks between words, and the blanks between them collapse. The blanks that start a line are kept, as an indentation. |
+| #34 | Blanks in a text | As written, with no `wrap` (#65b). With `wrap=true`, the blanks between words collapse, and those that start a line are kept. |
 | #35 | The height of a line | The size of a font is the height of a line, glyphs and leading together, so that `n` lines take exactly `n` times the size. |
 | #36 | The keys | Right, Down, Space, PageDown: next (step, then slide). Left, Up, Backspace, PageUp: previous. Home, End. F: fullscreen. Escape, Q: quit. |
 | - | The marker of an item | The dot of an item has the color of the text of the item. |
