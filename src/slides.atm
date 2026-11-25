@@ -288,11 +288,6 @@ func Slides.check (doc) {
                     Slides.err(":Slides", "invalid aspect : expected [w, h]")
                 }
             }
-            k == :fit => {
-                if !((v == :stretch) || (v == :bars)) {
-                    Slides.err(":Slides", "invalid fit : expected :stretch or :bars")
-                }
-            }
             else => Slides.err(":Slides", "unknown field : " ++ tostring(k))
         }
     }
@@ -961,8 +956,10 @@ task Slides.Frame (f) {
 }
 
 ;; Sets the dimension of the world from the window and the `aspect` of
-;; the document. Evaluates to its width and height.
-func Slides.world (doc) {
+;; the document, and how it is placed in a window of another proportion
+;; (`fit`: :stretch or :bars, an option of the command line, #48).
+;; Evaluates to its width and height.
+func Slides.world (doc, fit) {
     pico.set.layer(pico.layer.window)
     val win = pico.get.scene().dim
     pico.set.layer(pico.layer.world)
@@ -976,7 +973,7 @@ func Slides.world (doc) {
             set h = math.floor(w/a)
         }
     }
-    pico.set.scene [ dim=['!', w=w, h=h], fit=(doc.fit || :stretch) ]
+    pico.set.scene [ dim=['!', w=w, h=h], fit=(fit || :stretch) ]
     return w, h
 }
 
@@ -986,13 +983,13 @@ func Slides.world (doc) {
 ;;   Home, End                       first and last slides
 ;;   F                               fullscreen
 ;;   Escape, Q                       quit
-task Slides.Play (doc) {
+task Slides.Play (doc, fit) {
     Slides.check(doc)
     var cur = 0
     var fs = false
     set Slides.step = 0
     loop {
-        val w, h = Slides.world(doc)
+        val w, h = Slides.world(doc, fit)
         pin frames = Slides.layout(doc, w, h)
         val last = #frames - 1
         val quit = par :any {

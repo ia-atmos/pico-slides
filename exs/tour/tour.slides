@@ -7,7 +7,7 @@ CODE  = [ fg=:navy ]
 SMALL = [ file="../../res/DejaVuSans.ttf", size=0.04 ]
 LOGO  = :image ["square.png", rect=['%', x=1, y=1, w=0.08, anchor=:SE]]
 
-:Slides [ aspect=[16, 9], fit=:bars,
+:Slides [ aspect=[16, 9],
     font = FONT,
 
     :Slide [ color=[bg=:navy, fg=:white],

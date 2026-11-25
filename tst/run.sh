@@ -42,9 +42,14 @@ want () {
 #   keys: f:dn:Key,... or "-" for none
 #   each <frame> is saved as out/<name>-<frame>.png
 #   RESIZE=f:w:h,... before the call resizes the window at those frames
+#   FIT=bars before the call gives --fit=bars
 shots () {
     name=$1; file=$2; w=$3; h=$4; frames=$5; keys=$6
     shift 6
+    resize="$RESIZE"
+    RESIZE=""
+    fitopt="${FIT:+--fit=$FIT}"
+    FIT=""
     want "$name" || return 0
     list=""
     for f in "$@"; do
@@ -52,8 +57,6 @@ shots () {
         rm -f "out/$name-$f.png"
     done
     [ "$keys" = "-" ] && keys=""
-    resize="$RESIZE"
-    RESIZE=""
     case "$file" in
         *.atm)
             ( cd "$(dirname "$file")" &&
@@ -65,7 +68,7 @@ shots () {
             PICO_ATM_FRAMES=$frames:20 PICO_ATM_KEYS="$keys" \
                 PICO_ATM_RESIZE="$resize" \
                 PICO_ATM_SHOT="$list" SDL_AUDIODRIVER=dummy \
-                xvfb-run -a ../slides "$file" "$w" "$h" > "out/$name.log" 2>&1
+                xvfb-run -a ../slides $fitopt "$file" "$w" "$h" > "out/$name.log" 2>&1
             ;;
     esac
     ok=1
@@ -95,6 +98,23 @@ refuse () {
         xvfb-run -a ../slides "err/$name.slides" 640 360 > "out/$name.log" 2>&1
     then
         echo "FAIL $name    (the document was accepted)"
+        fail=1
+    elif grep -qF -- "$msg" "out/$name.log"; then
+        echo "OK   $name"
+    else
+        echo "FAIL $name    (see tst/out/$name.log)"
+        fail=1
+    fi
+}
+
+# cli <name> <message> <args of ../slides> ...
+#   ../slides must fail with a message that contains <message>
+cli () {
+    name=$1; msg=$2
+    shift 2
+    want "$name" || return 0
+    if ../slides "$@" > "out/$name.log" 2>&1; then
+        echo "FAIL $name    (it was accepted)"
         fail=1
     elif grep -qF -- "$msg" "out/$name.log"; then
         echo "OK   $name"

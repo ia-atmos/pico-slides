@@ -5,6 +5,7 @@ shots text     text.slides     960 540  8 4:dn:Right,6:dn:Right             2 5 
 shots image    image.slides    960 540  8 4:dn:Right,6:dn:Right             2 5 7
 shots list     list.slides     960 540  8 4:dn:Right,6:dn:Right             2 5 7
 shots sections sections.slides 960 540 12 3:dn:Right,5:dn:End,7:dn:Left,9:dn:Home,10:dn:Left  2 4 6 8 11
+FIT=bars
 shots aspect   aspect.slides   800 400  3 -                                 2
 shots stretch  stretch.slides  800 400  3 -                                 2
 shots names    names.slides    960 540  6 3:dn:Right                        2 5
@@ -38,7 +39,7 @@ refuse bad-anim         "slides : slide 1 > 0:List : invalid anim : expected tru
 refuse anim-in-text     "slides : slide 1 > 0:text : unknown field : anim"
 refuse bad-span         "slides : slide 1 > 0:text : invalid span"
 refuse bad-aspect       "slides : :Slides : invalid aspect : expected [w, h]"
-refuse bad-fit          "slides : :Slides : invalid fit"
+refuse fit-in-doc       "slides : :Slides : unknown field : fit"
 refuse slide-in-block   "slides : slide 1 > 0:Row > 0:Slide : unknown block : :Slide"
 refuse block-in-slides  "slides : :Slides > 0 : expected :Slide or :Section"
 refuse block-in-section "slides : :Slides > 0:Section > 0 : expected :Slide"
@@ -53,3 +54,7 @@ refuse undefined-name   "invalid load : line 1 : undefined name : LOGO"
 # PDF: a page for each slide
 pdf pdf-tour   7 ../exs/tour/tour.slides
 pdf pdf-slides 4 sections.slides 640 360
+
+# the command line
+cli  fit-no-equal  "(with =)"            --fit bars aspect.slides
+cli  fit-bad       "invalid fit"         --fit=crop aspect.slides

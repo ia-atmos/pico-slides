@@ -1,18 +1,23 @@
 ;; Plays a presentation written as data, or saves it as images:
 ;;
-;;   atmos-pico main.atm <file> [<width> <height> [<prefix>]]
+;;   atmos-pico main.atm <file> [<width> <height> [<fit> [<prefix>]]]
 ;;
 ;; The file is read with `X.loadx` (see doc/design.md). The paths in it
-;; (images, fonts) are relative to the current directory. With a
-;; prefix, the slides are saved as `<prefix>0001.png` and so on, one
-;; image for each slide, and the program ends.
+;; (images, fonts) are relative to the current directory. `fit` is
+;; `stretch` (the default) or `bars`. With a prefix, the slides are
+;; saved as `<prefix>0001.png` and so on, one image for each slide, and
+;; the program ends. The script `slides` gives these arguments.
 
 include "slides.atm"
 
-val path, w, h, prefix = ...
+val path, w, h, fit, prefix = ...
 
 if path == nil {
-    print("usage: main.atm <file> [<width> <height> [<prefix>]]")
+    print("usage: main.atm <file> [<width> <height> [<fit> [<prefix>]]]")
+    os.exit(1)
+}
+if (fit != nil) && (fit != "stretch") && (fit != "bars") {
+    print("slides : invalid fit : expected stretch or bars")
     os.exit(1)
 }
 
@@ -28,7 +33,7 @@ Slides.check(doc)
 pico.open [ title="pico-slides" ]
 pico.set.aids(false)
 pico.set.layer(pico.layer.window)
-pico.set.effect [ color=:black ]       ;; the bars of `fit=:bars`
+pico.set.effect [ color=:black ]       ;; the bars of `--fit=bars`
 pico.set.scene [ dim=['!',
     w=(tonumber(w) || Slides.dflt.win.w),
     h=(tonumber(h) || Slides.dflt.win.h),
@@ -36,7 +41,7 @@ pico.set.scene [ dim=['!',
 pico.set.layer(pico.layer.world)
 
 if prefix == nil {
-    await Slides.Play(doc)
+    await Slides.Play(doc, fit)
 } else {
     pico.set.expert(true, true)         ;; as fast as possible
     val n = await Slides.Export(doc, prefix)

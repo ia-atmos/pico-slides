@@ -1,5 +1,6 @@
+;; a presentation with a fixed proportion, played with --fit=bars
 ;; a fixed proportion in a window of another one, with bars
-:Slides [ aspect=[4, 3], fit=:bars,
+:Slides [ aspect=[4, 3],
     font = [file="../res/DejaVuSans.ttf"],
     color = [bg=:yellow],
     :Slide [ title="4:3 with bars",

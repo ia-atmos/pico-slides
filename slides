@@ -1,10 +1,14 @@
 #!/bin/sh
 # Plays a presentation, or saves it as a PDF:
 #
-#   ./slides <file> [<width> <height>]
+#   ./slides [--fit=stretch|bars] <file> [<width> <height>]
 #   ./slides --pdf <out.pdf> <file> [<width> <height>]
 #
 # The paths inside the file (images, fonts) are relative to the file.
+#
+# --fit tells how a slide with a fixed `aspect` is placed in a window of
+# another proportion: stretched (the default), or whole with bars. The
+# `=` is mandatory.
 #
 # With --pdf, nothing is shown: each slide is drawn with no window and
 # becomes a page, an image with the given dimension (1920x1080 if
@@ -17,15 +21,19 @@ ROOT="$(dirname "$(realpath "$0")")"
 PICO="${ATMOS_PICO:-$ROOT/deps/env-pico/atmos-pico}"
 
 usage () {
-    echo "usage: slides <file> [<width> <height>]" >&2
+    echo "usage: slides [--fit=stretch|bars] <file> [<width> <height>]" >&2
     echo "       slides --pdf <out.pdf> <file> [<width> <height>]" >&2
     exit 1
 }
 
 pdf=""
+fit="stretch"
 while [ $# -gt 0 ]; do
     case "$1" in
         --pdf)   [ $# -ge 2 ] || usage; pdf="$2"; shift 2 ;;
+        --fit=stretch|--fit=bars) fit="${1#--fit=}"; shift ;;
+        --fit=*) echo "slides : invalid fit : expected --fit=stretch or --fit=bars" >&2; exit 1 ;;
+        --fit)   echo "slides : invalid fit : expected --fit=stretch or --fit=bars (with =)" >&2; exit 1 ;;
         --*)     usage ;;
         *)       break ;;
     esac
@@ -42,7 +50,8 @@ shift
 
 if [ -z "$pdf" ]; then
     cd "$(dirname "$file")" || exit 1
-    exec "$PICO" "$ROOT/src/main.atm" "$(basename "$file")" "$@"
+    exec "$PICO" "$ROOT/src/main.atm" "$(basename "$file")" \
+        "${1:-960}" "${2:-540}" "$fit"
 fi
 
 if [ ! -x "$ROOT/deps/png2pdf" ]; then
@@ -59,6 +68,6 @@ trap 'rm -rf "$tmp"' EXIT
 
 cd "$(dirname "$file")" || exit 1
 "$PICO" -t "$ROOT/src/main.atm" "$(basename "$file")" \
-    "${1:-1920}" "${2:-1080}" "$tmp/page-" || exit 1
+    "${1:-1920}" "${2:-1080}" "$fit" "$tmp/page-" || exit 1
 "$ROOT/deps/png2pdf" "$pdf" "$tmp"/page-*.png || exit 1
 echo "slides : $pdf"
