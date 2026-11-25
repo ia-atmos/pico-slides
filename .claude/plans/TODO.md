@@ -30,7 +30,7 @@ recommendation. Listed on 2026-11-25.
 | #60 | A key that shows the table of contents at any time (the `T` of Aurora) | after #11; a slide made of `:Contents []` that the key shows and hides |
 | #61 | References (the `Ref` table and `Reference` slide of Aurora) | later; when needed, a block made from a table of references, as `:Contents` is made from the sections |
 | #62 | How to convert LP1: by hand or with a converter of `.fodp` | #62a, by hand, the class of C as a pilot |
-| #63 | Formatted text (#53): in pico or in the engine | asked by the author on 2026-11-25; see the answer in the conversation |
+| #63 | Formatted text (#53): in pico or in the engine | the engine, over pico as it is (fonts by file for bold and italic); confirmed 2026-11-25 |
 | #64 | A `:Box` with a border fills the rectangle it receives; in LP1 each box fits its code | to discuss: a box that takes the size of its content |
 
 The table form of `anim` (#6: something that disappears, shows only at
