@@ -446,7 +446,8 @@ In `src/slides.atm`, in three parts:
   and the fields above. An unknown field is an error, with the place
   of the node: `slides : slide 2 > 0:Row > 1:text : unknown field : colour`.
 - **`Slides.layout(doc, w, h)`** resolves all slides for a world of
-  `w` by `h` pixels. Each node becomes a **frame**: its rectangle in
+  `w` by `h` pixels: it measures in them, and a frame is drawn in `'%'`
+  of the world, with the anchors of pico (#71). Each node becomes a **frame**: its rectangle in
   pixels, what is drawn in it (a background, lines of text, an image,
   the dots of a list), and the frames inside it. A text that does not
   fit is an error here (#16), for every slide, before the first one is
@@ -455,7 +456,10 @@ In `src/slides.atm`, in three parts:
   current slide as a tree of tasks, one per frame: a task draws its
   own frame on `:draw`, and holds the tasks of the frames inside it in
   a pool. A key changes the slide, which aborts the tasks of the
-  previous one. A `:window.resize` lays everything out again.
+  previous one. A `:window.resize` only changes the size of the world
+  when the document has a fixed `aspect`, since the frames are drawn in
+  `'%'`; with no `aspect`, the proportion changes, and the layout is
+  made again.
 
 - **`Slides.Export(doc, prefix)`** is a task that saves each
   slide as an image, for the PDF.

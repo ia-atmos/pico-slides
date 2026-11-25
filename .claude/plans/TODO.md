@@ -35,9 +35,10 @@ recommendation. Listed on 2026-11-25.
 | #65 | Automatic line breaking (#12a) | #65b: off by default, `wrap=true` (inherited) turns it on; with no wrap, lines and blanks are as written; done |
 | #66 | The tag of formatted text | #66d: `:text.rich`, a subtype of `:text` |
 | #67 | One font for bold and italic | #67a: pico synthesizes them (env-pico#18, 662a659); `font.bold` and `font.italic` are optional; done |
-| #68 | Steps as tasks, or computed at load | open: the session withdrew its recommendation to move them to tasks; the structure is the main loop of Aurora |
+| #68 | Steps as tasks, or computed at load | computed at load, the main loop of Aurora; it stays (2026-11-25) |
 | #69 | A presentation may fail on a smaller window (overflow is an error, no aspect, no wrap) | open: recommended to always give `aspect`, and to check with `--pdf` |
-| #70 | Use the anchors and relative rects of pico in the engine | open: #70a `pico.in.rect` for the composition, #70b a layer per composite, #70c as it is |
+| #70 | Use the anchors and relative rects of pico in the engine | superseded by #71 |
+| #71 | The engine in relative coordinates | done: the layout measures at the size of the world when it is made, and draws in `'%'` with the anchors of pico; with a fixed `aspect`, a resize needs no new layout. Layers per frame (#70b) later, when steps by visibility, effects, or overlays ask for them |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.
