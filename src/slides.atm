@@ -483,7 +483,7 @@ func Slides.shift (f, dx, dy) {
 ;; ------------------------------------------------------------------------
 
 func Slides.pencil_font (file) {
-    pico.set.pencil [ font=(file || true), smooth=true ]
+    pico.set.pencil [ font=(file || true), smooth=true, bold=false, italic=false ]
 }
 
 func Slides.cell_h (pt) {
@@ -590,7 +590,7 @@ func Slides.rich_parse (line) {
     val segs = []
     var cur = ""
     var b = false
-    var it = false
+    var ital = false
     var m = false
     var k = 0
     val n = #line
@@ -598,9 +598,9 @@ func Slides.rich_parse (line) {
         if cur != "" {
             val kind = ifs {
                 m        => :m
-                b && it  => :bi
+                b && ital => :bi
                 b        => :b
-                it       => :i
+                ital     => :i
                 else     => :r
             }
             set segs@+ = [ s=cur, k=kind ]
@@ -638,7 +638,7 @@ func Slides.rich_parse (line) {
             }
             c == "*" => {
                 flush()
-                set it = !it
+                set ital = !ital
                 set k = k + 1
             }
             else => {
@@ -651,31 +651,41 @@ func Slides.rich_parse (line) {
     segs
 }
 
-;; the font of a kind of segment, the regular one if absent
-func Slides.rich_file (st, k) {
+;; The font of a kind of segment, as [file=, b=, i=]: the file of the
+;; variant if the style has one, or else the regular file with the
+;; style synthesized by pico (`b`, `i`, #67a). Mono is only a file.
+func Slides.rich_font (st, k) {
     ifs {
-        k == :m  => st.mono || st.file
-        k == :b  => st.bold || st.file
-        k == :bi => st.bold || st.italic || st.file
-        k == :i  => st.italic || st.file
-        else     => st.file
+        k == :m  => [ file=(st.mono || st.file), b=false, i=false ]
+        k == :b  => if st.bold => [ file=st.bold, b=false, i=false ]
+                             => [ file=st.file, b=true,  i=false ]
+        k == :i  => if st.italic => [ file=st.italic, b=false, i=false ]
+                               => [ file=st.file,   b=false, i=true  ]
+        k == :bi => if st.bold => [ file=st.bold, b=false, i=true ]
+                             => [ file=st.file, b=true,  i=true ]
+        else     => [ file=st.file, b=false, i=false ]
     }
 }
 
-func Slides.tw (file, pt, s) {
-    Slides.pencil_font(file)
+func Slides.pencil_rich (fn) {
+    pico.set.pencil [ font=(fn.file || true), smooth=true, bold=fn.b, italic=fn.i ]
+}
+
+func Slides.tw (fn, pt, s) {
+    Slides.pencil_rich(fn)
     Slides.text_w(pt, s)
 }
 
 ;; The lines of a `:text.rich`, as `Slides.wrap` does for a plain text:
-;; each line has `runs`, [[s=, file=, dx=], ...], drawn one after the
+;; each line has `runs`, [[s=, fn=, dx=], ...], drawn one after the
 ;; other. All runs have the point size of the regular font.
 func Slides.rich (str, st, h, maxw) {
     val pt = Slides.pt(st.file, h)
     val pitch = math.floor(h)
     val out = [ w=0, h=0, pt=pt, pitch=pitch, lines=[] ]
     val pars = string.split(str, "\n")
-    val sp = Slides.tw(st.file, pt, "x x") - Slides.tw(st.file, pt, "xx")
+    val reg = [ file=st.file, b=false, i=false ]
+    val sp = Slides.tw(reg, pt, "x x") - Slides.tw(reg, pt, "xx")
     loop i in #pars {
         val segs = Slides.rich_parse(pars@i)
         if !st.wrap {
@@ -684,9 +694,9 @@ func Slides.rich (str, st, h, maxw) {
             var x = 0
             loop j in #segs {
                 val g = segs@j
-                val file = Slides.rich_file(st, g.k)
-                set runs@+ = [ s=g.s, file=file, dx=x ]
-                set x = x + Slides.tw(file, pt, g.s)
+                val fn = Slides.rich_font(st, g.k)
+                set runs@+ = [ s=g.s, fn=fn, dx=x ]
+                set x = x + Slides.tw(fn, pt, g.s)
             }
             set out.lines@+ = [ runs=runs, w=x, dx=0 ]
             skip
@@ -699,13 +709,13 @@ func Slides.rich (str, st, h, maxw) {
         var seen = false
         loop j in #segs {
             val g = segs@j
-            val file = Slides.rich_file(st, g.k)
+            val fn = Slides.rich_font(st, g.k)
             var piece = ""
             loop c in #g.s {
                 val ch = string.sub(g.s, c, c)
                 if ch == " " {
                     if piece != "" {
-                        set word@+ = [ s=piece, file=file ]
+                        set word@+ = [ s=piece, fn=fn ]
                         set piece = ""
                     }
                     if word != nil {
@@ -727,7 +737,7 @@ func Slides.rich (str, st, h, maxw) {
                 if word == nil {
                     set word = []
                 }
-                set word@+ = [ s=piece, file=file ]
+                set word@+ = [ s=piece, fn=fn ]
             }
         }
         if word != nil {
@@ -740,7 +750,7 @@ func Slides.rich (str, st, h, maxw) {
             val wd = words@j
             var ww = 0
             loop q in #wd {
-                set wd@q.w = Slides.tw(wd@q.file, pt, wd@q.s)
+                set wd@q.w = Slides.tw(wd@q.fn, pt, wd@q.s)
                 set ww = ww + wd@q.w
             }
             if #runs > 0 {
@@ -753,7 +763,7 @@ func Slides.rich (str, st, h, maxw) {
                 }
             }
             loop q in #wd {
-                set runs@+ = [ s=wd@q.s, file=wd@q.file, dx=x ]
+                set runs@+ = [ s=wd@q.s, fn=wd@q.fn, dx=x ]
                 set x = x + wd@q.w
             }
         }
@@ -1197,14 +1207,15 @@ func Slides.draw (f) {
         pico.output.draw.image(i.path, ['!', x=i.x, y=i.y, w=i.w, h=i.h, anchor=:NW])
     }
     if f.lines {
-        pico.set.pencil [ color=f.fg, font=(f.file || true), smooth=true ]
+        pico.set.pencil [ color=f.fg, font=(f.file || true), smooth=true,
+                          bold=false, italic=false ]
         loop i in #f.lines {
             val l = f.lines@i
             if l.runs {
                 loop j in #l.runs {
                     val r = l.runs@j
                     if r.s != "" {
-                        pico.set.pencil [ font=(r.file || true) ]
+                        Slides.pencil_rich(r.fn)
                         pico.output.draw.text(r.s, ['!', x=l.x+math.floor(r.dx), y=l.y, h=f.pt, anchor=:NW])
                     }
                 }

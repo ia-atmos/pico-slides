@@ -1,10 +1,11 @@
-;; :text.rich: **bold**, *italic*, and `code` inside a text
+;; :text.rich: **bold**, *italic*, and `code` inside a text; a variant
+;; with no file is synthesized by pico
 :Slides [
-    font = [ file="../res/DejaVuSans.ttf", bold="../res/DejaVuSans-Bold.ttf",
-             mono="../res/DejaVuSansMono.ttf", size=0.04 ],
+    font = [ file="../res/DejaVuSans.ttf", mono="../res/DejaVuSansMono.ttf", size=0.04 ],
     :Slide [ title=:text.rich ["A **rich** title"], anchor=:W,
+        font = [ bold="../res/DejaVuSans-Bold.ttf" ],
         :List [ span=2,
-            :text.rich ["Plain, **bold**, *italic (no file: regular)*, and `code`."],
+            :text.rich ["Plain, **bold**, *italic (synthesized)*, and `code`."],
             :text.rich ["`printf` and `scanf` are in `<stdio.h>`."],
             :text.rich ['''A backslash: \*not italic\*, `*in code*`, and \n kept.'''],
             :text.rich ['''Two lines,
@@ -16,5 +17,8 @@
 }''', anchor=:NW, font=[file="../res/DejaVuSansMono.ttf", bold="../res/DejaVuSansMono-Bold.ttf"]],
         ],
         :text.rich ["With **wrap=true**, a *long* sentence breaks between its words, even across `code` and **bold** words, to fit the width.", wrap=true],
+    ],
+    :Slide [ title=:text.rich ["Only **one** font"],
+        :text.rich ["**bold** and *italic* and ***both***, synthesized from DejaVuSans.ttf"],
     ],
 ]
