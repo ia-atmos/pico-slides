@@ -23,7 +23,7 @@ func TextAndList (title, text, items) {
         set list@+ = items@i
     }
     :Slide [ title=title,
-        :Row [ :text [text, anchor=:W], list ],
+        :Row [ :text [text, anchor=:W, wrap=true], list ],
     ]
 }
 

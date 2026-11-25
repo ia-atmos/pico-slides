@@ -1,4 +1,4 @@
-:Slides [ font = [file="../../res/DejaVuSans.ttf"],
+:Slides [ font = [file="../../res/DejaVuSans.ttf"], wrap=true,
     :Slide [ title="Too much text",
         :Row [
             "short",

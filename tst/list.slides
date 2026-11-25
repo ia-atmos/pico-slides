@@ -4,7 +4,7 @@
     :Slide [ title="A list",
         :List [
             "No empty program",
-            "No reading of its own file, which is an item that is long enough to break in two lines at this width",
+            :text ["No reading of its own file, which is an item that is long enough to break in two lines at this width", wrap=true],
             :List [ "a sublist", :text ["with a red item", color=[fg=:red]], :List [ "and one more level" ] ],
             "The last item",
         ],

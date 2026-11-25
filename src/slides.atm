@@ -139,6 +139,12 @@ func Slides.check_common (loc, n, k, v) {
             }
             true
         }
+        k == :wrap => {
+            if type(v) != 'boolean' {
+                Slides.err(loc, "invalid wrap : expected true or false")
+            }
+            true
+        }
         else => false
     }
 }
@@ -351,7 +357,7 @@ func Slides.check (doc) {
 func Slides.style (up, n) {
     val st = [
         fg=up.fg, bg=up.bg, file=up.file, size=up.size,
-        pad=up.pad, gap=up.gap, anchor=up.anchor, step=up.step,
+        pad=up.pad, gap=up.gap, anchor=up.anchor, step=up.step, wrap=up.wrap,
     ]
     if Slides.istab(n) {
         if n.color {
@@ -367,13 +373,14 @@ func Slides.style (up, n) {
             if n.cell.gap != nil { set st.gap = n.cell.gap }
         }
         if n.anchor != nil { set st.anchor = n.anchor }
+        if n.wrap != nil { set st.wrap = n.wrap }
     }
     st
 }
 
 func Slides.root () {
     val d = Slides.dflt
-    [ fg=d.fg, bg=d.bg, file=nil, size=d.size, pad=d.pad, gap=d.gap, anchor=nil, step=0 ]
+    [ fg=d.fg, bg=d.bg, file=nil, size=d.size, pad=d.pad, gap=d.gap, anchor=nil, step=0, wrap=false ]
 }
 
 ;; the background and the padding that a block sets itself
@@ -498,17 +505,31 @@ func Slides.text_w (pt, s) {
     }
 }
 
-;; Breaks a string into lines that fit in `maxw`, with lines of height
-;; `h`. Evaluates to [w=, h=, pt=, pitch=, lines=[[s=, w=], ...]], with
-;; the dimension of the block. A word wider than `maxw` stays alone in a
-;; line, wider than the block allows: the caller checks `w`. The blanks
-;; between words are not kept, but those that start a line are.
-func Slides.wrap (str, file, h, maxw) {
+;; The lines of a string, with lines of height `h`. Evaluates to
+;; [w=, h=, pt=, pitch=, lines=[[s=, w=, dx=], ...]], with the dimension
+;; of the block. The caller checks that `w` fits.
+;;
+;; With no `wrap` (the default, #65), the lines are the ones written in
+;; the string, as they are, blanks included. With `wrap`, a line also
+;; breaks between words to fit in `maxw`; then the blanks between words
+;; collapse, and those that start a line are kept, as an indentation.
+func Slides.wrap (str, file, h, maxw, wrap) {
     val pt = Slides.pt(file, h)
     Slides.pencil_font(file)
     val pitch = math.floor(h)
     val out = [ w=0, h=0, pt=pt, pitch=pitch, lines=[] ]
     val pars = string.split(str, "\n")
+    if !wrap {
+        loop i in #pars {
+            val l = pars@i
+            set out.lines@+ = [ s=l, w=Slides.text_w(pt, l), dx=0 ]
+        }
+        loop i in #out.lines {
+            set out.w = math.max(out.w, out.lines@i.w)
+        }
+        set out.h = #out.lines * pitch
+        return out
+    }
     val one = Slides.text_w(pt, "xx")
     loop i in #pars {
         ;; the blanks that start a line are kept, as an indentation
@@ -574,7 +595,7 @@ func Slides.lay_text (str, n, R, up, loc) {
     val I = Slides.shrink(R, Slides.own_pad(n))
     val h = if rect && rect.h => rect.h*I.h => st.size*Slides.H
     val maxw = if rect && rect.w => rect.w*I.w => I.w
-    val blk = Slides.wrap(str, st.file, h, maxw)
+    val blk = Slides.wrap(str, st.file, h, maxw, st.wrap)
     val x, y, ax = Slides.place(I, blk.w, blk.h, rect, st.anchor, :C)
     if blk.w > I.w + 0.5 {
         Slides.overflow(loc, "width", blk.w - I.w)
@@ -711,7 +732,7 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
                 if Slides.istab(k) && k.rect {
                     Slides.err(me, "rect is not supported in a text of a :List")
                 }
-                val blk = Slides.wrap(str, ist.file, ist.size*Slides.H, iw)
+                val blk = Slides.wrap(str, ist.file, ist.size*Slides.H, iw, ist.wrap)
                 if blk.w > iw + 0.5 {
                     Slides.overflow(me, "width", blk.w - iw)
                 }
@@ -873,7 +894,7 @@ func Slides.lay_slide (n, up, loc) {
             set tst.anchor = :N
         }
         val tts = Slides.style(tst, tn)
-        val blk = Slides.wrap(str, tts.file, tts.size*H, I.w)
+        val blk = Slides.wrap(str, tts.file, tts.size*H, I.w, tts.wrap)
         val me = loc ++ " > title"
         if blk.w > I.w + 0.5 {
             Slides.overflow(me, "width", blk.w - I.w)

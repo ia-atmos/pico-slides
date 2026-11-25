@@ -1,4 +1,4 @@
-;; wrapping, line breaks, anchors, sizes, and colors of text
+;; wrapping (wrap=true), line breaks, blanks, anchors, sizes, and colors
 :Slides [
     font = [file="../res/DejaVuSans.ttf"],
     cell = [gap=0.01],
@@ -19,7 +19,7 @@
             :text ["SE", anchor=:SE, color=[bg=:silver]],
         ],
     ],
-    :Slide [ title="Wrapping",
+    :Slide [ title="Wrapping", wrap=true,
         :Row [
             :text ["A text that is long enough to break in some lines, aligned to the west.", anchor=:W],
             :text ["A text that is long enough to break in some lines, aligned to the center."],
@@ -37,5 +37,12 @@ fourth line, after an empty one''', anchor=:NW, color=[fg=:blue]],
             :text ["at SE", rect=['%', x=1, y=1, anchor=:SE], color=[bg=:yellow]],
         ],
         :text ["Acentuação: ação, coração, à, é, ô, ü, ñ", color=[fg=:white, bg=:black]],
+    ],
+    :Slide [ title="Blanks are kept, with no wrap",
+        :Box [ border=[], cell=[pad=0.02],
+            :text ['''int  x   = 1;      // aligned
+int  yy  = 22;     // in columns
+    four blanks at the start''', font=[file="../res/DejaVuSansMono.ttf"], anchor=:NW],
+        ],
     ],
 ]

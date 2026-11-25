@@ -1,7 +1,7 @@
 # The tests of tst/run.sh.
 
 shots layout   layout.slides   960 540  8 4:dn:Right,6:dn:Right             2 5 7
-shots text     text.slides     960 540  8 4:dn:Right,6:dn:Right             2 5 7
+shots text     text.slides     960 540 10 4:dn:Right,6:dn:Right,8:dn:Right  2 5 7 9
 shots image    image.slides    960 540  8 4:dn:Right,6:dn:Right             2 5 7
 shots list     list.slides     960 540  8 4:dn:Right,6:dn:Right             2 5 7
 shots sections sections.slides 960 540 12 3:dn:Right,5:dn:End,7:dn:Left,9:dn:Home,10:dn:Left  2 4 6 8 11
@@ -26,6 +26,7 @@ shots program  ../exs/program/main.atm - - 6 3:dn:Right                     2 5
 
 refuse overflow-height  "slides : slide 1 > 0:Row > 1:Col > 0:text : text does not fit : height exceeds by"
 refuse overflow-width   "slides : slide 1 > 0:Row > 6:text : text does not fit : width exceeds by"
+refuse overflow-nowrap  "slides : slide 1 > 0:text : text does not fit : width exceeds by"
 refuse overflow-list    "slides : slide 1 > 2:List : text does not fit : height exceeds by"
 refuse overflow-second  "slides : slide 2 > 0:text : text does not fit"
 refuse unknown-field    "slides : slide 1 > 0:text : unknown field : colour"
@@ -40,6 +41,7 @@ refuse bad-anim         "slides : slide 1 > 0:List : invalid anim : expected tru
 refuse anim-in-text     "slides : slide 1 > 0:text : unknown field : anim"
 refuse box-two          "slides : slide 1 > 0:Box : expected a single block"
 refuse box-border       "slides : slide 1 > 0:Box : invalid border : unknown field : width"
+refuse bad-wrap         "slides : slide 1 > 0:text : invalid wrap : expected true or false"
 refuse bad-span         "slides : slide 1 > 0:text : invalid span"
 refuse bad-aspect       "slides : :Slides : invalid aspect : expected [w, h]"
 refuse fit-in-doc       "slides : :Slides : unknown field : fit"
