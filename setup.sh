@@ -13,7 +13,7 @@
 set -e
 cd "$(dirname "$(realpath "$0")")"
 
-LANG_SHA=98e47876bcfb6f01d9b9893fbbfadba0fac65839
+LANG_SHA=95946fe9edb9df09724b10b9581c24e7b825291f
 PICO_SHA=8a20c46483715938215de79fdfba4baedbe90c93
 
 fetch () {  # <dir> <url> <commit>
