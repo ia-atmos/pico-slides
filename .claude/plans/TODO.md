@@ -17,7 +17,7 @@ recommendation. Listed on 2026-11-25.
 | #48 | Where `aspect` and `fit` go: the document or the command line | done: `aspect` in the document; `./slides --fit=stretch|bars`, the `=` mandatory |
 | #11 | `:Contents []`, implemented by the session: a list of the titles of the sections, the others dimmed inside a section | confirm |
 | #49 | The dot of a list item takes the color of the item's text (implemented by the session) | confirm |
-| #50 | Convert the slides of the courses, starting with LP1 | piloting `lp1-02-c` by hand (#62a), in `exs/lp1/` |
+| #50 | Convert the slides of the courses, starting with LP1 | pilot done by hand (#62a): `exs/lp1/lp1-02-c.slides`, 9 slides. Missing for a faithful copy: keywords in bold (#53), boxes that fit their code (#64), the balloon of slide 8 (#57), the gradient of the background |
 | #51 | `:Box`: a frame around its content | done: `:Box [ border=[size=, color=], <one block> ]` |
 | #52 | A container with a single element needs no `:Row` or `:Col` | done: a `:Box` with no `border` |
 | #53 | Text or code in many lines with Markdown-like formatting | in steps: `**bold**`, `*italic*`, and `` `code` `` inside a text, then blocks of code in a monospace font; no syntax highlighting at first |
@@ -31,6 +31,7 @@ recommendation. Listed on 2026-11-25.
 | #61 | References (the `Ref` table and `Reference` slide of Aurora) | later; when needed, a block made from a table of references, as `:Contents` is made from the sections |
 | #62 | How to convert LP1: by hand or with a converter of `.fodp` | #62a, by hand, the class of C as a pilot |
 | #63 | Formatted text (#53): in pico or in the engine | asked by the author on 2026-11-25; see the answer in the conversation |
+| #64 | A `:Box` with a border fills the rectangle it receives; in LP1 each box fits its code | to discuss: a box that takes the size of its content |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.
