@@ -1,8 +1,9 @@
 ;; LP1, class 02: C, first steps.
 ;;
 ;; A pilot of the conversion of the slides of LP1 (pico-slides#62a), by
-;; hand from `Slides/lp1-02-c.fodp` of fsantanna-uerj/LP1. Not there
-;; yet: the keywords in bold (#53), the boxes that fit their code (the
+;; hand from `Slides/lp1-02-c.fodp` of fsantanna-uerj/LP1. The code is
+;; a `:text.rich`, with the keywords in bold. Not there yet: the boxes
+;; that fit their code (the
 ;; original draws each box around its code), the balloon of slide 8
 ;; (#57), the gray gradient of the background.
 ;;
@@ -10,8 +11,8 @@
 
 FONT  = [ file="../../res/DejaVuSans.ttf" ]
 TFONT = [ file="../../res/DejaVuSans-Bold.ttf", size=0.075 ]
-MONO  = [ file="../../res/DejaVuSansMono.ttf", size=0.034 ]
-SMONO = [ file="../../res/DejaVuSansMono.ttf", size=0.03 ]
+MONO  = [ file="../../res/DejaVuSansMono.ttf", bold="../../res/DejaVuSansMono-Bold.ttf", size=0.034 ]
+SMONO = [ file="../../res/DejaVuSansMono.ttf", bold="../../res/DejaVuSansMono-Bold.ttf", size=0.03 ]
 TCOLOR = [ fg=:orange ]
 
 :Slides [ aspect=[4, 3],
@@ -31,13 +32,13 @@ TCOLOR = [ fg=:orange ]
         :Row [ anim=true,
             :Col [ anim=true, span=4,
                 :Box [ border=[], cell=[pad=0.015], span=4,
-                    :text ['''// 01-oi.c
+                    :text.rich ['''// 01-oi.c
 
-#include <stdio.h>
+#**include** <stdio.h>
 
-int main (void) {
-    printf("Oi Mundo!\n");
-    return 0;
+**int** **main** (**void**) {
+    **printf**("Oi Mundo!\n");
+    **return** 0;
 }''', font=MONO, anchor=:NW],
                 ],
                 :Box [ border=[], cell=[pad=0.015],
@@ -47,9 +48,9 @@ $ ./oi.exe''', font=MONO, anchor=:NW],
             ],
             :Col [ anim=true, span=3,
                 :Box [ border=[], cell=[pad=0.015], span=4,
-                    :text ['''# 01-oi.py
+                    :text.rich ['''# 01-oi.py
 
-print("Oi Mundo!")''', font=MONO, anchor=:NW],
+**print**("Oi Mundo!")''', font=MONO, anchor=:NW],
                 ],
                 :Box [ border=[], cell=[pad=0.015],
                     :text ["$ python2 01-oi.py", font=MONO, anchor=:NW],
@@ -62,15 +63,15 @@ print("Oi Mundo!")''', font=MONO, anchor=:NW],
         :Row [ anim=true,
             :Col [ anim=true, span=3,
                 :Box [ border=[], cell=[pad=0.015], span=4,
-                    :text ['''// 02-num.c
+                    :text.rich ['''// 02-num.c
 
-#include <stdio.h>
+#**include** <stdio.h>
 
-void main (void) {
-  int num;
-  printf("Escolha um numero: ");
-  scanf("%d", &num);
-  printf("Voce escolheu %d\n", num);
+**void** **main** (**void**) {
+  **int** num;
+  **printf**("Escolha um numero: ");
+  **scanf**("%d", &num);
+  **printf**("Voce escolheu %d\n", num);
 }''', font=SMONO, anchor=:NW],
                 ],
                 :Box [ border=[], cell=[pad=0.015],
@@ -80,11 +81,11 @@ $ ./num.exe''', font=SMONO, anchor=:NW],
             ],
             :Col [ span=2,
                 :Box [ border=[], cell=[pad=0.015], span=2,
-                    :text ['''# 02-num.py
+                    :text.rich ['''# 02-num.py
 
-print("Escolha um numero:")
-num = input()
-print("Voce escolheu", num)''', font=SMONO, anchor=:NW],
+**print**("Escolha um numero:")
+num = **input**()
+**print**("Voce escolheu", num)''', font=SMONO, anchor=:NW],
                 ],
                 :Box [ "" ],
             ],
@@ -95,18 +96,18 @@ print("Voce escolheu", num)''', font=SMONO, anchor=:NW],
         :Row [ anim=true,
             :Col [ anim=true, span=3,
                 :Box [ border=[], cell=[pad=0.015], span=5,
-                    :text ['''// 03-escolha.c
+                    :text.rich ['''// 03-escolha.c
 
-#include <stdio.h>
+#**include** <stdio.h>
 
-void main (void) {
-  int num;
-  printf("Escolha entre 1-9: ");
-  scanf("%d", &num);
-  if (num == 5) {
-    printf("Voce acertou!\n");
-  } else {
-    printf("Voce errou!\n");
+**void** **main** (**void**) {
+  **int** num;
+  **printf**("Escolha entre 1-9: ");
+  **scanf**("%d", &num);
+  **if** (num == 5) {
+    **printf**("Voce acertou!\n");
+  } **else** {
+    **printf**("Voce errou!\n");
   }
 }''', font=SMONO, anchor=:NW],
                 ],
@@ -117,14 +118,14 @@ $ ./escolha.exe''', font=SMONO, anchor=:NW],
             ],
             :Col [ span=2,
                 :Box [ border=[], cell=[pad=0.015], span=2,
-                    :text ['''# 03-escolha.py
+                    :text.rich ['''# 03-escolha.py
 
-print("Escolha entre 1-9:")
-num = input()
-if num == 5:
-  print("Voce acertou!")
-else:
-  print("Voce errou!")''', font=SMONO, anchor=:NW],
+**print**("Escolha entre 1-9:")
+num = **input**()
+**if** num == 5:
+  **print**("Voce acertou!")
+**else**:
+  **print**("Voce errou!")''', font=SMONO, anchor=:NW],
                 ],
                 :Box [ "" ],
             ],
@@ -135,20 +136,20 @@ else:
         :Row [ anim=true,
             :Col [ anim=true, span=3,
                 :Box [ border=[], cell=[pad=0.015], span=5,
-                    :text ['''// 04-soma.c
+                    :text.rich ['''// 04-soma.c
 
-#include <stdio.h>
+#**include** <stdio.h>
 
-void main (void) {
-  int soma = 0;
-  int num;
-  printf("Escolha um numero: ");
-  scanf("%d", &num);
-  while (num > 0) {
+**void** **main** (**void**) {
+  **int** soma = 0;
+  **int** num;
+  **printf**("Escolha um numero: ");
+  **scanf**("%d", &num);
+  **while** (num > 0) {
     soma = (soma + num);
     num = (num - 1);
   }
-  printf("somou %d\n", soma);
+  **printf**("somou %d\n", soma);
 }''', font=SMONO, anchor=:NW],
                 ],
                 :Box [ border=[], cell=[pad=0.015],
@@ -158,15 +159,15 @@ $ ./soma.exe''', font=SMONO, anchor=:NW],
             ],
             :Col [ span=2,
                 :Box [ border=[], cell=[pad=0.015], span=2,
-                    :text ['''# 04-soma.py
+                    :text.rich ['''# 04-soma.py
 
-print("Escolha um numero:")
-num = input()
+**print**("Escolha um numero:")
+num = **input**()
 soma = 0
-while num > 0:
+**while** num > 0:
   soma = (soma + num)
   num = (num - 1)
-print("somou", soma)''', font=SMONO, anchor=:NW],
+**print**("somou", soma)''', font=SMONO, anchor=:NW],
                 ],
                 :Box [ "" ],
             ],
@@ -175,17 +176,17 @@ print("somou", soma)''', font=SMONO, anchor=:NW],
 
     :Slide [
         :Box [ border=[], cell=[pad=0.015], rect=['%', w=0.6],
-            :text ['''#include <stdio.h>
-void main (void) {
-  int soma = 0;
-  int num;
-  printf("Escolha um numero: ");
-  scanf("%d", &num);
-  while (num > 0) {
+            :text.rich ['''#**include** <stdio.h>
+**void** **main** (**void**) {
+  **int** soma = 0;
+  **int** num;
+  **printf**("Escolha um numero: ");
+  **scanf**("%d", &num);
+  **while** (num > 0) {
     soma = (soma + num);
     num = (num - 1);
   }
-  printf("somou %d\n", soma);
+  **printf**("somou %d\n", soma);
 }''', font=SMONO, anchor=:NW],
         ],
         :image ["img/c-computador.png"],
@@ -205,18 +206,18 @@ void main (void) {
     :Slide [ title=:text ["Referência", font=TFONT, color=TCOLOR],
         :List [ anim=true,
             "Função principal",
-            :List [ :text ["void main (void) { ... }", font=SMONO] ],
+            :List [ :text.rich ["**void** main (**void**) { ... }", font=SMONO] ],
             "Entrada e saída",
             :List [
-                :text ["#include <stdio.h>", font=SMONO],
-                :text ['''printf("Texto %d texto %d\n", v1, v2);''', font=SMONO],
-                :text ['''scanf("%d", &v);  // v deve ser declarado''', font=SMONO],
+                :text.rich ["#**include** <stdio.h>", font=SMONO],
+                :text.rich ['''**printf**("Texto %d texto %d\n", v1, v2);''', font=SMONO],
+                :text.rich ['''**scanf**("%d", &v);  // v deve ser declarado''', font=SMONO],
             ],
             "Controle de fluxo",
             :List [
-                :text ["if (num == 5) { ... } else { ... }", font=SMONO],
-                :text ["while (num > 0) { ... }", font=SMONO],
-                :text ["for (i=0; i<10; i++) { ... }", font=SMONO],
+                :text.rich ["**if** (num == 5) { ... } **else** { ... }", font=SMONO],
+                :text.rich ["**while** (num > 0) { ... }", font=SMONO],
+                :text.rich ["**for** (i=0; i<10; i++) { ... }", font=SMONO],
             ],
         ],
     ],
