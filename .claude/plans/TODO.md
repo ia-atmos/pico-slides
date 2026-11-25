@@ -9,52 +9,29 @@ commits, with a pull with rebase before each push.
 
 ## Waits for the author
 
-By the session, to be confirmed (each is reversible):
+Each item has a number, a description, and the session's
+recommendation. Listed on 2026-11-25.
 
-| Item | What was done | To undo |
+| Item | Description | Recommended |
 |---|---|---|
-| #11 | #11a: `:Contents []`, a list of the titles of the sections. Marked as confirmed (#39) from an "ok" that most likely answered #40: back to be confirmed | remove `Slides.lay_contents` and the tag |
-| - | The dot of an item of a list has the color of the text of the item | one line in `Slides.lay_list_at` |
+| #48 | Where `aspect` and `fit` go: the document or the command line | `aspect` stays in the document (the layout and the overflow error depend on it); `fit` becomes an option of `./slides` (`--fit bars`), default `stretch` |
+| #11 | `:Contents []`, implemented by the session: a list of the titles of the sections, the others dimmed inside a section | confirm |
+| #49 | The dot of a list item takes the color of the item's text (implemented by the session) | confirm |
+| #50 | Convert the slides of the courses, starting with LP1 | first, where they are and in what format; convert one class as a pilot, in a directory of its own, before the rest |
+| #51 | `:Box`: a frame around its content | a composite of one child that draws a border inside its rectangle, with `border=[size=, color=]` (color from `fg` if absent); the padding inside comes from `cell.pad` |
+| #52 | A container with a single element needs no `:Row` or `:Col` | confirm the case first; if it is to give `rect`, `color`, or `anchor` to one block, `:Box` (#51) with no border covers it |
+| #53 | Text or code in many lines with Markdown-like formatting | in steps: `**bold**`, `*italic*`, and `` `code` `` inside a text, then blocks of code in a monospace font; no syntax highlighting at first |
+| #54 | `anim=true` would hide the first child too, with a per-child way to show it from the start | decide together with #55, which gives that per-child field |
+| #55 | `step` back, as a field of a child: `step=false` shows it with its parent; a step local (in the parent's sequence) or global (of the slide) | `step=false` and a local `step=N` first; global steps when overlays (#57) need them |
+| #56 | A `:Section` shows the table of contents at its start, unless `toc=false` | off by default, turned on with `toc=true` in `:Slides` or in a `:Section`, so documents do not gain slides nobody wrote |
+| #57 | Overlays: arrows, rectangles, and texts over the objects of a slide, which needs an id for an object | a field `id` on any block, and overlay blocks that point at ids; after #55, since an overlay usually comes at a step |
+| #58 | Send the vocabulary to `paper-media` (it waits for it: its #5, #10, #12) | send; the message is ready, and was refused twice by the permissions of this session, so it needs his word here |
+| #59 | The readme: what it says of Aurora and of Thiago Presotto, and whether he is told | review the paragraph; telling him is the author's |
+| #60 | A key that shows the table of contents at any time (the `T` of Aurora) | after #11; a slide made of `:Contents []` that the key shows and hides |
+| #61 | References (the `Ref` table and `Reference` slide of Aurora) | later; when needed, a block made from a table of references, as `:Contents` is made from the sections |
 
-Open, with no recommendation acted on:
-
-| Item | Question | Recommended |
-|---|---|---|
-| - | A key for the table of contents at any time (the `T` of Aurora) | not discussed |
-| - | References (the `Ref` and `Reference` of Aurora) | not discussed |
-| #6 | Steps: the table form of `anim` | to discuss: a block that disappears, is shown only at some keys, or is highlighted; an explicit order |
-| - | The readme: what it says of Aurora and of Presotto, and whether he is told | written in a neutral way, to be reviewed |
-
-## For Wednesday (2026-11-25), raised by the author on 2026-11-23
-
-Not started; to discuss first.
-
-- #48: `aspect` in the document and `fit` on the command line, or
-  otherwise (recommended: `aspect` in the document, `fit` as an option
-  of `./slides`).
-- Convert the slides of the courses, starting with LP1: where they
-  are, in what format, where the new ones go.
-- `:Box`: a frame around its content.
-- A container with a single element needs no `:Row` or `:Col`.
-- Text or code in many lines with formatting, in the style of
-  Markdown.
-
-Raised on 2026-11-24, for later:
-
-- `anim=true` would hide the first child too; a child with
-  `anim=false` would show from the start. Conflict to resolve: on a
-  composite child, `anim=false` already means "my children do not
-  step".
-- A `:Section` would show the table of contents at its start, unless
-  `toc=false`. To decide: the default, where `toc` goes (section or
-  document), and what that slide looks like.
-- Overlays: arrows, rectangles, and texts drawn over the objects of a
-  slide, for animations. Needs a way to identify an object (a name or
-  an id) to point at it.
-- `step` comes back in some form, as the field of a child, which may
-  resolve the ambiguity of `anim=false` above: `step=false` would show
-  the object from the start of its parent. A step may be local (in the
-  sequence of its parent) or global (of the slide).
+The table form of `anim` (#6: something that disappears, shows only at
+some keys, or is highlighted) waits for #54 and #55.
 
 ## Index of items
 
