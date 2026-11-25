@@ -58,6 +58,7 @@ Block   : :Row   [ Block* ]
         | Text
         | :image [ STR ]            ;; the path of the file
         | :Contents [ ]             ;; the table of contents
+        | :Box [ Block ]            ;; one block, with a border or not
         | STR                       ;; same as :text [ STR ]
 Text    : :text  [ STR ]
 ```
@@ -70,6 +71,7 @@ Text    : :text  [ STR ]
 | Composite block | `:Row`, `:Col`, `:List` | anywhere inside a slide | any block |
 | Leaf block | `:text`, `:image`, a string | anywhere inside a slide | its content only |
 | Generated block | `:Contents` | anywhere inside a slide | nothing |
+| Box | `:Box` | anywhere inside a slide | exactly one block |
 
 Not valid: a `:Slide` inside a block or another slide; a block directly
 in `:Slides` or `:Section`; children in a leaf.
@@ -99,6 +101,13 @@ behaves the same in a slide, in a `:Col`, or as an item of a `:List`.
   needed inside a `:Row`.
 - `:List` stacks its children, with a marker before each. An item is
   any block, so a list nests in a list.
+
+- `:Box` holds a single block (#51, #52). It draws a border inside its
+  rectangle if it has `border=[size=, color=]`: `size` is a fraction of
+  the height of the slide (`0.004` if absent), and `color` is the color
+  of the text if absent. Its `cell.pad` is the space inside the border.
+  With no `border`, it only gives a `rect`, a `color`, or an `anchor`
+  to one block, with no `:Row` or `:Col` around it.
 
 In a `:Row`, `:Col`, and `:Slide`, the parts are equal, unless a child
 has a `span`.
@@ -212,19 +221,22 @@ cell = [ pad=NUM, gap=NUM ]
 - `title` is a string, or a `:text [...]` to give it a style of its
   own.
 
-### The dimension of the slide (#17, #21, #22a, #25b)
+### The dimension of the slide (#17, #21, #22a, #25b, #48)
 
-Two fields of `:Slides`:
+The proportion is part of the document, since the layout and the error
+of a text that does not fit depend on it. How the slide is placed in a
+window of another proportion is part of the screen, so it is an option
+of the command line (#48):
 
-| Field | Value | Effect |
+| Where | Value | Effect |
 |---|---|---|
-| `aspect` | absent | the slide follows the proportion of the window |
-| `aspect` | `[w, h]`, as in `[16, 9]` | a fixed proportion |
-| `fit` | `:stretch` (default) | the slide fills the window, deformed |
-| `fit` | `:bars` | the slide is scaled until it fits whole; the rest is bars |
+| `aspect` in `:Slides` | absent | the slide follows the proportion of the window |
+| `aspect` in `:Slides` | `[w, h]`, as in `[16, 9]` | a fixed proportion |
+| `./slides --fit=stretch` | the default | the slide fills the window, deformed |
+| `./slides --fit=bars` | | the slide is scaled until it fits whole; the rest is bars |
 
-`fit` only matters with a fixed `aspect`. Its default is the same as in
-pico. The resolution is that of the
+`--fit` only matters with a fixed `aspect`, and the `=` is mandatory.
+Its default is the same as in pico. The resolution is that of the
 window in all cases.
 
 ## Steps: `anim` (#47)
@@ -314,7 +326,8 @@ font  = [ file=STR, size=NUM ]
 
 | Field | Where | Inherited |
 |---|---|---|
-| `aspect`, `fit` | `:Slides` | - |
+| `aspect` | `:Slides` | - |
+| `border=[size=, color=]` | `:Box` | no |
 | `title` | `:Slide`, `:Section` | no |
 | `rect` | any block | no |
 | `span` | any child of a composite | no |
@@ -475,8 +488,8 @@ Not decided.
 - **`fit` in pico** (session `env-pico`): done on 2026-11-20. It is a
   field of the scene of any layer, `pico.set.scene [ fit=:bars ]` or
   `fit=:stretch`, valid in a resized window and in fullscreen, so the
-  `fit` of `:Slides` is passed straight to the world, with the same
-  default (`:stretch`). The
+  option `--fit` of `./slides` is passed straight to the world, with the
+  same default (`:stretch`). The
   bars take the clear color of the window layer, and a point of the
   mouse on a bar is outside the world. In pico, enums are now written
   as tags (`:red`, `:NW`), as in this document.

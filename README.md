@@ -54,8 +54,10 @@ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev \
 ./slides exs/tour/tour.slides       # a tour, written in the format
 ```
 
-`./slides <file> [<width> <height>]` plays a file of data. The paths in
-the file (images, fonts) are relative to it.
+`./slides [--fit=stretch|bars] <file> [<width> <height>]` plays a file
+of data. The paths in the file (images, fonts) are relative to it.
+`--fit=bars` keeps the proportion of a document with a fixed `aspect`
+in a window of another one, with bars; the default stretches it.
 
 `./slides --pdf <out.pdf> <file> [<width> <height>]` saves
 the presentation as a PDF, with no window: each slide is drawn as on
