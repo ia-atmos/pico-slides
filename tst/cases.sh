@@ -5,6 +5,9 @@ shots text     text.slides     960 540 10 4:dn:Right,6:dn:Right,8:dn:Right  2 5 
 shots image    image.slides    960 540  8 4:dn:Right,6:dn:Right             2 5 7
 shots list     list.slides     960 540  8 4:dn:Right,6:dn:Right             2 5 7
 shots sections sections.slides 960 540 12 3:dn:Right,5:dn:End,7:dn:Left,9:dn:Home,10:dn:Left  2 4 6 8 11
+RESIZE=3:400:200
+FIT=bars
+shots aspect-resize aspect.slides 800 400 6 -                         2 5
 FIT=bars
 shots aspect   aspect.slides   800 400  3 -                                 2
 shots stretch  stretch.slides  800 400  3 -                                 2

@@ -7,12 +7,17 @@
 ;;   Slides.layout(doc)      resolves every slide into a tree of frames
 ;;   Slides.Play(doc)        a task that shows the document, with keys
 ;;
-;; A frame is a rectangle in pixels of the world, with what is drawn in
-;; it, and the frames inside it. A task draws each frame.
+;; A frame is a rectangle of the world, with what is drawn in it, and the
+;; frames inside it. The layout measures in the pixels of the world as
+;; it is when it is made, and a frame is drawn in `'%'` of the world,
+;; with the anchors of pico, so that the world may change its size with
+;; no new layout (#71). A task draws each frame.
 
 pin Slides = [
-    W = 0,              ;; the dimension of the world, in pixels
-    H = 0,
+    W = 0,              ;; the dimension of the world when the layout was made,
+    H = 0,              ;;   in pixels: the frames are measured in it
+    CW = 0,             ;; the dimension of the world now, in pixels
+    CH = 0,
     sections = [],      ;; the titles of the sections, during a layout
     section = nil,      ;; the index of the section of the slide in layout
     step = 0,           ;; the step of the current slide that is shown
@@ -458,6 +463,7 @@ func Slides.shift (f, dx, dy) {
             val l = f.lines@i
             set l.x = l.x + dx
             set l.y = l.y + dy
+            set l.px = l.px + dx
         }
     }
     if f.dots {
@@ -792,6 +798,11 @@ func Slides.lines_at (blk, x, y, ax) {
         val l = blk.lines@i
         set l.x = math.floor(x + ax*(blk.w - l.w) + l.dx)
         set l.y = math.floor(y + i*blk.pitch)
+        ;; the point of the line that pico anchors, with its horizontal
+        ;; anchor, so that pico aligns the line with the width it has at
+        ;; the size it is drawn
+        set l.ax = ax
+        set l.px = x + ax*blk.w + (1-ax)*l.dx
     }
 }
 
@@ -1182,29 +1193,37 @@ func Slides.layout (doc, w, h) {
 ;; PLAY
 ;; ------------------------------------------------------------------------
 
-;; Draws what is of the frame itself, if its step was reached.
+;; A rectangle of the layout in `'%'` of the world.
+func Slides.pct (x, y, w, h) {
+    ['%', x=x/Slides.W, y=y/Slides.H, w=w/Slides.W, h=h/Slides.H, anchor=:NW]
+}
+
+;; Draws what is of the frame itself, if its step was reached, in `'%'`
+;; of the world (#71).
 func Slides.draw (f) {
     if f.step > Slides.step {
         return
     }
+    val W = Slides.W
+    val H = Slides.H
     if f.bg != nil {
         pico.set.pencil [ color=f.bg, style=:fill ]
-        pico.output.draw.rect ['!', x=math.floor(f.x), y=math.floor(f.y),
-            w=math.ceil(f.w), h=math.ceil(f.h), anchor=:NW]
+        pico.output.draw.rect(Slides.pct(f.x, f.y, f.w, f.h))
     }
     if f.border {
+        ;; at least a pixel of the world as it is now
         val b = f.border
-        val x, y = math.floor(f.x), math.floor(f.y)
-        val w, h = math.ceil(f.w), math.ceil(f.h)
+        val bx = math.max(b.w/W, 1/Slides.CW) * W
+        val by = math.max(b.w/H, 1/Slides.CH) * H
         pico.set.pencil [ color=b.color, style=:fill ]
-        pico.output.draw.rect ['!', x=x, y=y, w=w, h=b.w, anchor=:NW]
-        pico.output.draw.rect ['!', x=x, y=y+h-b.w, w=w, h=b.w, anchor=:NW]
-        pico.output.draw.rect ['!', x=x, y=y, w=b.w, h=h, anchor=:NW]
-        pico.output.draw.rect ['!', x=x+w-b.w, y=y, w=b.w, h=h, anchor=:NW]
+        pico.output.draw.rect(Slides.pct(f.x, f.y, f.w, by))
+        pico.output.draw.rect(Slides.pct(f.x, f.y+f.h-by, f.w, by))
+        pico.output.draw.rect(Slides.pct(f.x, f.y, bx, f.h))
+        pico.output.draw.rect(Slides.pct(f.x+f.w-bx, f.y, bx, f.h))
     }
     if f.img {
         val i = f.img
-        pico.output.draw.image(i.path, ['!', x=i.x, y=i.y, w=i.w, h=i.h, anchor=:NW])
+        pico.output.draw.image(i.path, Slides.pct(i.x, i.y, i.w, i.h))
     }
     if f.lines {
         pico.set.pencil [ color=f.fg, font=(f.file || true), smooth=true,
@@ -1216,12 +1235,14 @@ func Slides.draw (f) {
                     val r = l.runs@j
                     if r.s != "" {
                         Slides.pencil_rich(r.fn)
-                        pico.output.draw.text(r.s, ['!', x=l.x+math.floor(r.dx), y=l.y, h=f.pt, anchor=:NW])
+                        pico.output.draw.text(r.s, ['%',
+                            x=(l.x+r.dx)/W, y=l.y/H, h=f.pt/H, anchor=:NW])
                     }
                 }
             } else {
                 if l.s != "" {
-                    pico.output.draw.text(l.s, ['!', x=l.x, y=l.y, h=f.pt, anchor=:NW])
+                    pico.output.draw.text(l.s, ['%',
+                        x=l.px/W, y=l.y/H, h=f.pt/H, anchor=[x=l.ax, y=0]])
                 }
             }
         }
@@ -1233,7 +1254,7 @@ func Slides.draw (f) {
                 skip
             }
             pico.set.pencil [ color=d.fg, style=:fill ]
-            pico.output.draw.oval ['!', x=d.x, y=d.y, w=d.d, h=d.d, anchor=:NW]
+            pico.output.draw.oval(Slides.pct(d.x, d.y, d.d, d.d))
         }
     }
 }
@@ -1274,6 +1295,8 @@ func Slides.world (doc, fit) {
         }
     }
     pico.set.scene [ dim=['!', w=w, h=h], fit=(fit || :stretch) ]
+    set Slides.CW = w
+    set Slides.CH = h
     return w, h
 }
 
@@ -1293,7 +1316,14 @@ task Slides.Play (doc, fit) {
         pin frames = Slides.layout(doc, w, h)
         val last = #frames - 1
         val quit = par :any {
-            await :window.resize
+            ;; with a fixed `aspect`, a new size of the window is only a
+            ;; new size of the world, drawn in `'%'`; with no `aspect`,
+            ;; the proportion changes, and the layout is made again
+            loop {
+                await :window.resize
+                until !doc.aspect
+                Slides.world(doc, fit)
+            }
             false
         } with {
             loop {
