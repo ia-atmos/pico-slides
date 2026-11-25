@@ -489,7 +489,7 @@ func Slides.shift (f, dx, dy) {
 ;; ------------------------------------------------------------------------
 
 func Slides.pencil_font (file) {
-    pico.set.pencil [ font=(file || true), smooth=true, bold=false, italic=false ]
+    pico.set.pencil [ text=[font=(file || true), smooth=true, bold=false, italic=false] ]
 }
 
 func Slides.cell_h (pt) {
@@ -674,7 +674,7 @@ func Slides.rich_font (st, k) {
 }
 
 func Slides.pencil_rich (fn) {
-    pico.set.pencil [ font=(fn.file || true), smooth=true, bold=fn.b, italic=fn.i ]
+    pico.set.pencil [ text=[font=(fn.file || true), smooth=true, bold=fn.b, italic=fn.i] ]
 }
 
 func Slides.tw (fn, pt, s) {
@@ -1207,7 +1207,7 @@ func Slides.draw (f) {
     val W = Slides.W
     val H = Slides.H
     if f.bg != nil {
-        pico.set.pencil [ color=f.bg, style=:fill ]
+        pico.set.pencil [ color=f.bg, shape=[style=:fill] ]
         pico.output.draw.rect(Slides.pct(f.x, f.y, f.w, f.h))
     }
     if f.border {
@@ -1215,7 +1215,7 @@ func Slides.draw (f) {
         val b = f.border
         val bx = math.max(b.w/W, 1/Slides.CW) * W
         val by = math.max(b.w/H, 1/Slides.CH) * H
-        pico.set.pencil [ color=b.color, style=:fill ]
+        pico.set.pencil [ color=b.color, shape=[style=:fill] ]
         pico.output.draw.rect(Slides.pct(f.x, f.y, f.w, by))
         pico.output.draw.rect(Slides.pct(f.x, f.y+f.h-by, f.w, by))
         pico.output.draw.rect(Slides.pct(f.x, f.y, bx, f.h))
@@ -1226,8 +1226,8 @@ func Slides.draw (f) {
         pico.output.draw.image(i.path, Slides.pct(i.x, i.y, i.w, i.h))
     }
     if f.lines {
-        pico.set.pencil [ color=f.fg, font=(f.file || true), smooth=true,
-                          bold=false, italic=false ]
+        pico.set.pencil [ color=f.fg,
+            text=[font=(f.file || true), smooth=true, bold=false, italic=false] ]
         loop i in #f.lines {
             val l = f.lines@i
             if l.runs {
@@ -1253,7 +1253,7 @@ func Slides.draw (f) {
             if d.step > Slides.step {
                 skip
             }
-            pico.set.pencil [ color=d.fg, style=:fill ]
+            pico.set.pencil [ color=d.fg, shape=[style=:fill] ]
             pico.output.draw.oval(Slides.pct(d.x, d.y, d.d, d.d))
         }
     }
