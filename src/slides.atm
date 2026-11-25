@@ -92,6 +92,11 @@ func Slides.check_group (loc, name, g, kinds) {
                     Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected number")
                 }
             }
+            kind == :pos => {
+                if !(Slides.isnum(v) && (v > 0)) {
+                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected positive number")
+                }
+            }
             kind == :str => {
                 if !Slides.isstr(v) {
                     Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected string")
@@ -128,7 +133,7 @@ func Slides.check_common (loc, n, k, v) {
         }
         k == :font => {
             Slides.check_group(loc, "font", v,
-                [file=:file, size=:num, bold=:file, italic=:file, mono=:file])
+                [file=:file, size=:pos, bold=:file, italic=:file, mono=:file])
             true
         }
         k == :cell => {
@@ -212,7 +217,7 @@ func Slides.check_block (loc, n) {
                 }
             }
             (k == :border) && (tag == :Box) => {
-                Slides.check_group(me, "border", v, [size=:num, color=:color])
+                Slides.check_group(me, "border", v, [size=:pos, color=:color])
             }
             (k == :anim) && (tag != :text) && (tag != :text.rich) && (tag != :image) && (tag != :Box) => {
                 Slides.check_anim(me, v)
@@ -965,6 +970,9 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
                   k.tag == :Box => {
                     set f = Slides.lay_box(k, [x=ix, y=cy, w=iw, h=h], ist, me, true)
                   }
+                  k.tag == :Contents => {
+                    set f = Slides.lay_contents(k, [x=ix, y=cy, w=iw, h=h], ist, me)
+                  }
                   else => {
                     val kst = Slides.style(ist, k)
                     val I = Slides.shrink([x=ix, y=cy, w=iw, h=h], Slides.own_pad(k))
@@ -977,7 +985,7 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
                 set first = h
             }
         }
-        if ktag != :List {
+        if (ktag != :List) && (ktag != :Contents) {
             val d = math.max(2, math.floor(line * 0.3))
             set out.dots@+ = [
                 step = cst.step,

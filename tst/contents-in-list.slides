@@ -1,0 +1,7 @@
+;; a table of contents as an item of a list
+:Slides [ font=[file="../res/DejaVuSans.ttf"],
+    :Section [ title="First",
+        :Slide [ title="Agenda", :List [ "before", :Contents [ rect=['%', h=0.4] ], "after" ] ],
+    ],
+    :Section [ title="Second", :Slide [ "x" ] ],
+]
