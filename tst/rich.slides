@@ -1,0 +1,20 @@
+;; :text.rich: **bold**, *italic*, and `code` inside a text
+:Slides [
+    font = [ file="../res/DejaVuSans.ttf", bold="../res/DejaVuSans-Bold.ttf",
+             mono="../res/DejaVuSansMono.ttf", size=0.04 ],
+    :Slide [ title=:text.rich ["A **rich** title"], anchor=:W,
+        :List [ span=2,
+            :text.rich ["Plain, **bold**, *italic (no file: regular)*, and `code`."],
+            :text.rich ["`printf` and `scanf` are in `<stdio.h>`."],
+            :text.rich ['''A backslash: \*not italic\*, `*in code*`, and \n kept.'''],
+            :text.rich ['''Two lines,
+  the second **indented**.'''],
+        ],
+        :Box [ border=[], cell=[pad=0.02],
+            :text.rich ['''**int** main (**void**) {
+    **return**  0;    // two blanks kept
+}''', anchor=:NW, font=[file="../res/DejaVuSansMono.ttf", bold="../res/DejaVuSansMono-Bold.ttf"]],
+        ],
+        :text.rich ["With **wrap=true**, a *long* sentence breaks between its words, even across `code` and **bold** words, to fit the width.", wrap=true],
+    ],
+]

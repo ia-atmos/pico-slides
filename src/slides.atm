@@ -63,6 +63,7 @@ func Slides.isnum (v) {
 
 func Slides.is_block (tag) {
     (tag == :Row) || (tag == :Col) || (tag == :List) || (tag == :text) ||
+        (tag == :text.rich) ||
         (tag == :image) || (tag == :Contents) || (tag == :Box)
 }
 
@@ -126,7 +127,8 @@ func Slides.check_common (loc, n, k, v) {
             true
         }
         k == :font => {
-            Slides.check_group(loc, "font", v, [file=:file, size=:num])
+            Slides.check_group(loc, "font", v,
+                [file=:file, size=:num, bold=:file, italic=:file, mono=:file])
             true
         }
         k == :cell => {
@@ -212,14 +214,14 @@ func Slides.check_block (loc, n) {
             (k == :border) && (tag == :Box) => {
                 Slides.check_group(me, "border", v, [size=:num, color=:color])
             }
-            (k == :anim) && (tag != :text) && (tag != :image) && (tag != :Box) => {
+            (k == :anim) && (tag != :text) && (tag != :text.rich) && (tag != :image) && (tag != :Box) => {
                 Slides.check_anim(me, v)
             }
             else => Slides.err(me, "unknown field : " ++ tostring(k))
         }
     }
     ifs {
-        tag == :text => Slides.check_text(me, n)
+        (tag == :text) || (tag == :text.rich) => Slides.check_text(me, n)
         tag == :Contents => {
             if #n != 0 {
                 Slides.err(me, "expected no entries")
@@ -251,8 +253,9 @@ func Slides.check_title (loc, n) {
     ifs {
         t == nil => nil
         Slides.isstr(t) => nil
-        Slides.istab(t) && (t.tag == :text) => Slides.check_block(loc ++ " > title", t)
-        else => Slides.err(loc, "invalid title : expected string or :text")
+        Slides.istab(t) && ((t.tag == :text) || (t.tag == :text.rich)) =>
+            Slides.check_block(loc ++ " > title", t)
+        else => Slides.err(loc, "invalid title : expected string, :text, or :text.rich")
     }
 }
 
@@ -357,6 +360,7 @@ func Slides.check (doc) {
 func Slides.style (up, n) {
     val st = [
         fg=up.fg, bg=up.bg, file=up.file, size=up.size,
+        bold=up.bold, italic=up.italic, mono=up.mono,
         pad=up.pad, gap=up.gap, anchor=up.anchor, step=up.step, wrap=up.wrap,
     ]
     if Slides.istab(n) {
@@ -367,6 +371,9 @@ func Slides.style (up, n) {
         if n.font {
             if n.font.file != nil { set st.file = n.font.file }
             if n.font.size != nil { set st.size = n.font.size }
+            if n.font.bold != nil { set st.bold = n.font.bold }
+            if n.font.italic != nil { set st.italic = n.font.italic }
+            if n.font.mono != nil { set st.mono = n.font.mono }
         }
         if n.cell {
             if n.cell.pad != nil { set st.pad = n.cell.pad }
@@ -568,6 +575,201 @@ func Slides.wrap (str, file, h, maxw, wrap) {
     out
 }
 
+;; The segments of a line of a `:text.rich` (#53, #66d): `**bold**`,
+;; `*italic*`, and `` `code` ``, as in Markdown. A backslash before `*`,
+;; `` ` ``, or another backslash takes that character as it is; any other
+;; backslash is kept, as in `"\n"` in code. Inside `` ` `` nothing is
+;; markup.
+;; Evaluates to [[s=, k=], ...], with `k` one of :r :b :i :bi :m.
+func Slides.rich_parse (line) {
+    val segs = []
+    var cur = ""
+    var b = false
+    var it = false
+    var m = false
+    var k = 0
+    val n = #line
+    val flush = \{
+        if cur != "" {
+            val kind = ifs {
+                m        => :m
+                b && it  => :bi
+                b        => :b
+                it       => :i
+                else     => :r
+            }
+            set segs@+ = [ s=cur, k=kind ]
+            set cur = ""
+        }
+    }
+    loop {
+        until k >= n
+        val c = string.sub(line, k, k)
+        ifs {
+            m => {
+                if c == "`" {
+                    flush()
+                    set m = false
+                } else {
+                    set cur = cur ++ c
+                }
+                set k = k + 1
+            }
+            (c == "\\") && ((string.sub(line, k+1, k+1) == "*") ||
+                              (string.sub(line, k+1, k+1) == "`") ||
+                              (string.sub(line, k+1, k+1) == "\\")) => {
+                set cur = cur ++ string.sub(line, k+1, k+1)
+                set k = k + 2
+            }
+            c == "`" => {
+                flush()
+                set m = true
+                set k = k + 1
+            }
+            (c == "*") && (string.sub(line, k+1, k+1) == "*") => {
+                flush()
+                set b = !b
+                set k = k + 2
+            }
+            c == "*" => {
+                flush()
+                set it = !it
+                set k = k + 1
+            }
+            else => {
+                set cur = cur ++ c
+                set k = k + 1
+            }
+        }
+    }
+    flush()
+    segs
+}
+
+;; the font of a kind of segment, the regular one if absent
+func Slides.rich_file (st, k) {
+    ifs {
+        k == :m  => st.mono || st.file
+        k == :b  => st.bold || st.file
+        k == :bi => st.bold || st.italic || st.file
+        k == :i  => st.italic || st.file
+        else     => st.file
+    }
+}
+
+func Slides.tw (file, pt, s) {
+    Slides.pencil_font(file)
+    Slides.text_w(pt, s)
+}
+
+;; The lines of a `:text.rich`, as `Slides.wrap` does for a plain text:
+;; each line has `runs`, [[s=, file=, dx=], ...], drawn one after the
+;; other. All runs have the point size of the regular font.
+func Slides.rich (str, st, h, maxw) {
+    val pt = Slides.pt(st.file, h)
+    val pitch = math.floor(h)
+    val out = [ w=0, h=0, pt=pt, pitch=pitch, lines=[] ]
+    val pars = string.split(str, "\n")
+    val sp = Slides.tw(st.file, pt, "x x") - Slides.tw(st.file, pt, "xx")
+    loop i in #pars {
+        val segs = Slides.rich_parse(pars@i)
+        if !st.wrap {
+            ;; the line as written
+            val runs = []
+            var x = 0
+            loop j in #segs {
+                val g = segs@j
+                val file = Slides.rich_file(st, g.k)
+                set runs@+ = [ s=g.s, file=file, dx=x ]
+                set x = x + Slides.tw(file, pt, g.s)
+            }
+            set out.lines@+ = [ runs=runs, w=x, dx=0 ]
+            skip
+        }
+        ;; the words, each a list of pieces of one font, and the
+        ;; blanks that start the line
+        val words = []
+        var word = nil
+        var lead = 0
+        var seen = false
+        loop j in #segs {
+            val g = segs@j
+            val file = Slides.rich_file(st, g.k)
+            var piece = ""
+            loop c in #g.s {
+                val ch = string.sub(g.s, c, c)
+                if ch == " " {
+                    if piece != "" {
+                        set word@+ = [ s=piece, file=file ]
+                        set piece = ""
+                    }
+                    if word != nil {
+                        set words@+ = word
+                        set word = nil
+                    }
+                    if !seen {
+                        set lead = lead + 1
+                    }
+                } else {
+                    set seen = true
+                    if word == nil {
+                        set word = []
+                    }
+                    set piece = piece ++ ch
+                }
+            }
+            if piece != "" {
+                if word == nil {
+                    set word = []
+                }
+                set word@+ = [ s=piece, file=file ]
+            }
+        }
+        if word != nil {
+            set words@+ = word
+        }
+        val indent = lead * sp
+        var runs = []
+        var x = indent
+        loop j in #words {
+            val wd = words@j
+            var ww = 0
+            loop q in #wd {
+                set wd@q.w = Slides.tw(wd@q.file, pt, wd@q.s)
+                set ww = ww + wd@q.w
+            }
+            if #runs > 0 {
+                if x + sp + ww <= maxw {
+                    set x = x + sp
+                } else {
+                    set out.lines@+ = [ runs=runs, w=x, dx=0 ]
+                    set runs = []
+                    set x = indent
+                }
+            }
+            loop q in #wd {
+                set runs@+ = [ s=wd@q.s, file=wd@q.file, dx=x ]
+                set x = x + wd@q.w
+            }
+        }
+        set out.lines@+ = [ runs=runs, w=(if #runs > 0 => x => 0), dx=0 ]
+    }
+    loop i in #out.lines {
+        set out.w = math.max(out.w, out.lines@i.w)
+    }
+    set out.h = #out.lines * pitch
+    out
+}
+
+;; A plain text or a `:text.rich`, by the node `n` (nil for a string).
+func Slides.text_block (str, n, st, h, maxw) {
+    if Slides.istab(n) && (n.tag == :text.rich) {
+        Slides.rich(str, st, h, maxw)
+    } else {
+        Slides.wrap(str, st.file, h, maxw, st.wrap)
+    }
+}
+
 ;; Sets the position of each line of a wrapped block whose corner is at
 ;; (x,y): `ax` aligns the lines inside the block.
 func Slides.lines_at (blk, x, y, ax) {
@@ -595,7 +797,7 @@ func Slides.lay_text (str, n, R, up, loc) {
     val I = Slides.shrink(R, Slides.own_pad(n))
     val h = if rect && rect.h => rect.h*I.h => st.size*Slides.H
     val maxw = if rect && rect.w => rect.w*I.w => I.w
-    val blk = Slides.wrap(str, st.file, h, maxw, st.wrap)
+    val blk = Slides.text_block(str, n, st, h, maxw)
     val x, y, ax = Slides.place(I, blk.w, blk.h, rect, st.anchor, :C)
     if blk.w > I.w + 0.5 {
         Slides.overflow(loc, "width", blk.w - I.w)
@@ -726,13 +928,13 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
         var f
         var first = line        ;; the height of the first line of the item
         ifs {
-            ktag == :text => {
+            (ktag == :text) || (ktag == :text.rich) => {
                 val str = if Slides.isstr(k) => k => k@0
                 val ist = Slides.style(cst, k)
                 if Slides.istab(k) && k.rect {
                     Slides.err(me, "rect is not supported in a text of a :List")
                 }
-                val blk = Slides.wrap(str, ist.file, ist.size*Slides.H, iw, ist.wrap)
+                val blk = Slides.text_block(str, k, ist, ist.size*Slides.H, iw)
                 if blk.w > iw + 0.5 {
                     Slides.overflow(me, "width", blk.w - iw)
                 }
@@ -855,7 +1057,7 @@ func Slides.lay (n, R, up, loc) {
     }
     val me = loc
     ifs {
-        n.tag == :text  => Slides.lay_text(n@0, n, R, up, me)
+        (n.tag == :text) || (n.tag == :text.rich) => Slides.lay_text(n@0, n, R, up, me)
         n.tag == :image => Slides.lay_image(n, R, up, me, false)
         n.tag == :List  => Slides.lay_list(n, R, up, me)
         n.tag == :Contents => Slides.lay_contents(n, R, up, me)
@@ -894,7 +1096,7 @@ func Slides.lay_slide (n, up, loc) {
             set tst.anchor = :N
         }
         val tts = Slides.style(tst, tn)
-        val blk = Slides.wrap(str, tts.file, tts.size*H, I.w, tts.wrap)
+        val blk = Slides.text_block(str, tn, tts, tts.size*H, I.w)
         val me = loc ++ " > title"
         if blk.w > I.w + 0.5 {
             Slides.overflow(me, "width", blk.w - I.w)
@@ -990,8 +1192,18 @@ func Slides.draw (f) {
         pico.set.pencil [ color=f.fg, font=(f.file || true), smooth=true ]
         loop i in #f.lines {
             val l = f.lines@i
-            if l.s != "" {
-                pico.output.draw.text(l.s, ['!', x=l.x, y=l.y, h=f.pt, anchor=:NW])
+            if l.runs {
+                loop j in #l.runs {
+                    val r = l.runs@j
+                    if r.s != "" {
+                        pico.set.pencil [ font=(r.file || true) ]
+                        pico.output.draw.text(r.s, ['!', x=l.x+math.floor(r.dx), y=l.y, h=f.pt, anchor=:NW])
+                    }
+                }
+            } else {
+                if l.s != "" {
+                    pico.output.draw.text(l.s, ['!', x=l.x, y=l.y, h=f.pt, anchor=:NW])
+                }
             }
         }
     }
