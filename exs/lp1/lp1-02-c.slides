@@ -1,0 +1,230 @@
+;; LP1, class 02: C, first steps.
+;;
+;; A pilot of the conversion of the slides of LP1 (pico-slides#62a), by
+;; hand from `Slides/lp1-02-c.fodp` of fsantanna-uerj/LP1. Not there
+;; yet: the keywords in bold (#53), the boxes that fit their code (the
+;; original draws each box around its code), the balloon of slide 8
+;; (#57), the gray gradient of the background.
+;;
+;;   ../../slides lp1-02-c.slides
+
+FONT  = [ file="../../res/DejaVuSans.ttf" ]
+TFONT = [ file="../../res/DejaVuSans-Bold.ttf", size=0.075 ]
+MONO  = [ file="../../res/DejaVuSansMono.ttf", size=0.034 ]
+SMONO = [ file="../../res/DejaVuSansMono.ttf", size=0.03 ]
+TCOLOR = [ fg=:orange ]
+
+:Slides [ aspect=[4, 3],
+    font = FONT,
+
+    :Slide [
+        :text ["Linguagens de Programação 1", font=[size=0.07], span=2, anchor=:S],
+        :Col [ anchor=:E, cell=[gap=0],
+            :text ["Francisco Sant'Anna", font=[size=0.045]],
+            :text ["Sala 6020-B", font=[size=0.04]],
+            :text ["francisco@ime.uerj.br", font=SMONO],
+            :text ["http://github.com/fsantanna-uerj/LP1", font=SMONO],
+        ],
+    ],
+
+    :Slide [ title=:text ["C – Primeiros Passos", font=TFONT, color=TCOLOR],
+        :Row [ anim=true,
+            :Col [ anim=true, span=4,
+                :Box [ border=[], cell=[pad=0.015], span=4,
+                    :text ['''// 01-oi.c
+
+#include <stdio.h>
+
+int main (void) {
+    printf("Oi Mundo!\n");
+    return 0;
+}''', font=MONO, anchor=:NW],
+                ],
+                :Box [ border=[], cell=[pad=0.015],
+                    :text ['''$ gcc 01-oi.c -o oi.exe
+$ ./oi.exe''', font=MONO, anchor=:NW],
+                ],
+            ],
+            :Col [ anim=true, span=3,
+                :Box [ border=[], cell=[pad=0.015], span=4,
+                    :text ['''# 01-oi.py
+
+print("Oi Mundo!")''', font=MONO, anchor=:NW],
+                ],
+                :Box [ border=[], cell=[pad=0.015],
+                    :text ["$ python2 01-oi.py", font=MONO, anchor=:NW],
+                ],
+            ],
+        ],
+    ],
+
+    :Slide [ title=:text ["C – Primeiros Passos", font=TFONT, color=TCOLOR],
+        :Row [ anim=true,
+            :Col [ anim=true, span=3,
+                :Box [ border=[], cell=[pad=0.015], span=4,
+                    :text ['''// 02-num.c
+
+#include <stdio.h>
+
+void main (void) {
+  int num;
+  printf("Escolha um numero: ");
+  scanf("%d", &num);
+  printf("Voce escolheu %d\n", num);
+}''', font=SMONO, anchor=:NW],
+                ],
+                :Box [ border=[], cell=[pad=0.015],
+                    :text ['''$ gcc 02-num.c -o num.exe
+$ ./num.exe''', font=SMONO, anchor=:NW],
+                ],
+            ],
+            :Col [ span=2,
+                :Box [ border=[], cell=[pad=0.015], span=2,
+                    :text ['''# 02-num.py
+
+print("Escolha um numero:")
+num = input()
+print("Voce escolheu", num)''', font=SMONO, anchor=:NW],
+                ],
+                :Box [ "" ],
+            ],
+        ],
+    ],
+
+    :Slide [ title=:text ["C – Primeiros Passos", font=TFONT, color=TCOLOR],
+        :Row [ anim=true,
+            :Col [ anim=true, span=3,
+                :Box [ border=[], cell=[pad=0.015], span=5,
+                    :text ['''// 03-escolha.c
+
+#include <stdio.h>
+
+void main (void) {
+  int num;
+  printf("Escolha entre 1-9: ");
+  scanf("%d", &num);
+  if (num == 5) {
+    printf("Voce acertou!\n");
+  } else {
+    printf("Voce errou!\n");
+  }
+}''', font=SMONO, anchor=:NW],
+                ],
+                :Box [ border=[], cell=[pad=0.015],
+                    :text ['''$ gcc 03-escolha.c -o escolha.exe
+$ ./escolha.exe''', font=SMONO, anchor=:NW],
+                ],
+            ],
+            :Col [ span=2,
+                :Box [ border=[], cell=[pad=0.015], span=2,
+                    :text ['''# 03-escolha.py
+
+print("Escolha entre 1-9:")
+num = input()
+if num == 5:
+  print("Voce acertou!")
+else:
+  print("Voce errou!")''', font=SMONO, anchor=:NW],
+                ],
+                :Box [ "" ],
+            ],
+        ],
+    ],
+
+    :Slide [ title=:text ["C – Primeiros Passos", font=TFONT, color=TCOLOR],
+        :Row [ anim=true,
+            :Col [ anim=true, span=3,
+                :Box [ border=[], cell=[pad=0.015], span=5,
+                    :text ['''// 04-soma.c
+
+#include <stdio.h>
+
+void main (void) {
+  int soma = 0;
+  int num;
+  printf("Escolha um numero: ");
+  scanf("%d", &num);
+  while (num > 0) {
+    soma = (soma + num);
+    num = (num - 1);
+  }
+  printf("somou %d\n", soma);
+}''', font=SMONO, anchor=:NW],
+                ],
+                :Box [ border=[], cell=[pad=0.015],
+                    :text ['''$ gcc 04-soma.c -o soma.exe
+$ ./soma.exe''', font=SMONO, anchor=:NW],
+                ],
+            ],
+            :Col [ span=2,
+                :Box [ border=[], cell=[pad=0.015], span=2,
+                    :text ['''# 04-soma.py
+
+print("Escolha um numero:")
+num = input()
+soma = 0
+while num > 0:
+  soma = (soma + num)
+  num = (num - 1)
+print("somou", soma)''', font=SMONO, anchor=:NW],
+                ],
+                :Box [ "" ],
+            ],
+        ],
+    ],
+
+    :Slide [
+        :Box [ border=[], cell=[pad=0.015], rect=['%', w=0.6],
+            :text ['''#include <stdio.h>
+void main (void) {
+  int soma = 0;
+  int num;
+  printf("Escolha um numero: ");
+  scanf("%d", &num);
+  while (num > 0) {
+    soma = (soma + num);
+    num = (num - 1);
+  }
+  printf("somou %d\n", soma);
+}''', font=SMONO, anchor=:NW],
+        ],
+        :image ["img/c-computador.png"],
+    ],
+
+    :Slide [ title=:text ["C vs Python", font=TFONT, color=TCOLOR],
+        :List [ anim=true,
+            "Verbosidade",
+            "Chaves vs Indentação",
+            "Tipagem estática vs Tipagem Dinâmica",
+            :List [ "Static typing vs Dynamic typing" ],
+            "Tipagem segura vs Tipagem não segura",
+            :List [ "Type safe vs Type unsafe" ],
+        ],
+    ],
+
+    :Slide [ title=:text ["Referência", font=TFONT, color=TCOLOR],
+        :List [ anim=true,
+            "Função principal",
+            :List [ :text ["void main (void) { ... }", font=SMONO] ],
+            "Entrada e saída",
+            :List [
+                :text ["#include <stdio.h>", font=SMONO],
+                :text ['''printf("Texto %d texto %d\n", v1, v2);''', font=SMONO],
+                :text ['''scanf("%d", &v);  // v deve ser declarado''', font=SMONO],
+            ],
+            "Controle de fluxo",
+            :List [
+                :text ["if (num == 5) { ... } else { ... }", font=SMONO],
+                :text ["while (num > 0) { ... }", font=SMONO],
+                :text ["for (i=0; i<10; i++) { ... }", font=SMONO],
+            ],
+        ],
+    ],
+
+    :Slide [ title=:text ["Exercícios 1 - 8", font=TFONT, color=TCOLOR],
+        :List [
+            "No site:",
+            :List [ :text ["https://github.com/fsantanna-uerj/LP1/blob/master/Exercicios/lp1-02.md", font=SMONO] ],
+        ],
+    ],
+]

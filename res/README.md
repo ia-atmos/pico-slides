@@ -10,3 +10,6 @@
 - `DejaVuSansMono.ttf`: DejaVu Sans Mono, of the same project and
   license, copied from the package `fonts-dejavu` of Debian. It is the
   font of code in the tests and the examples.
+- `DejaVuSans-Bold.ttf`: DejaVu Sans Bold, of the same project and
+  license, from the same package. It is the font of the titles in the
+  pilot of LP1 (`exs/lp1/`).

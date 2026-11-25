@@ -56,6 +56,7 @@ refuse undefined-name   "invalid load : line 1 : undefined name : LOGO"
 
 # PDF: a page for each slide
 pdf pdf-tour   7 ../exs/tour/tour.slides
+pdf pdf-lp1    9 ../exs/lp1/lp1-02-c.slides 1024 768
 pdf pdf-slides 4 sections.slides 640 360
 
 # the command line
