@@ -1,0 +1,27 @@
+;; :Box: a single block, with a border or not
+MONO = [ file="../res/DejaVuSansMono.ttf", size=0.035 ]
+
+:Slides [
+    font = [file="../res/DejaVuSans.ttf"],
+    :Slide [ title="Boxes",
+        :Row [
+            :Box [ border=[], cell=[pad=0.02],
+                :text ['''#include <stdio.h>
+int main (void) {
+    printf("Oi Mundo!\n");
+    return 0;
+}''', font=MONO, anchor=:NW],
+            ],
+            :Col [
+                :Box [ border=[size=0.01, color=:red], color=[bg=:yellow], rect=['%', w=0.6, h=0.5],
+                    "a box with a size",
+                ],
+                :Box [ anchor=:SE, "no border: only a block" ],
+            ],
+        ],
+        :List [ rect=['%', h=0.3],
+            "a box in a list:",
+            :Box [ border=[], rect=['%', h=0.4], :text ["$ gcc oi.c", font=MONO, anchor=:W] ],
+        ],
+    ],
+]

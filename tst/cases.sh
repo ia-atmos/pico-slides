@@ -10,6 +10,7 @@ shots aspect   aspect.slides   800 400  3 -                                 2
 shots stretch  stretch.slides  800 400  3 -                                 2
 shots names    names.slides    960 540  6 3:dn:Right                        2 5
 shots anim     anim.slides     960 540 31 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:Right,11:dn:Right,13:dn:Right,15:dn:Right,17:dn:Right,19:dn:Right,21:dn:Left,23:dn:Left,25:dn:Left,27:dn:End,29:dn:Home  2 4 6 8 10 12 14 16 18 20 22 24 26 28 30
+shots box      box.slides      960 540  3 -                                 2
 shots contents contents.slides 960 540  8 4:dn:Right,6:dn:Right             2 5 7
 shots theme    theme.slides    960 540  3 -                                 2
 shots builtin  builtin.slides  640 360  3 -                                 2
@@ -37,6 +38,8 @@ refuse bad-rect-mode    "slides : slide 1 > 0:text : invalid rect : expected ['%
 refuse contents-entries "slides : slide 1 > 0:Contents : expected no entries"
 refuse bad-anim         "slides : slide 1 > 0:List : invalid anim : expected true or false"
 refuse anim-in-text     "slides : slide 1 > 0:text : unknown field : anim"
+refuse box-two          "slides : slide 1 > 0:Box : expected a single block"
+refuse box-border       "slides : slide 1 > 0:Box : invalid border : unknown field : width"
 refuse bad-span         "slides : slide 1 > 0:text : invalid span"
 refuse bad-aspect       "slides : :Slides : invalid aspect : expected [w, h]"
 refuse fit-in-doc       "slides : :Slides : unknown field : fit"

@@ -25,6 +25,7 @@ pin Slides = [
         size  = 0.05,   ;; height of a line, fraction of the slide height
         pad   = 0.04,   ;; margin of a slide
         gap   = 0.02,   ;; space between the children of a composite
+        border = 0.004, ;; the width of the border of a :Box
         title = 1.5,    ;; size of a title, relative to the size of the text
         win   = [w=960, h=540],
     ],
@@ -62,7 +63,7 @@ func Slides.isnum (v) {
 
 func Slides.is_block (tag) {
     (tag == :Row) || (tag == :Col) || (tag == :List) || (tag == :text) ||
-        (tag == :image) || (tag == :Contents)
+        (tag == :image) || (tag == :Contents) || (tag == :Box)
 }
 
 func Slides.is_anchor (a) {
@@ -202,7 +203,10 @@ func Slides.check_block (loc, n) {
                     Slides.err(me, "invalid span : expected positive number")
                 }
             }
-            (k == :anim) && (tag != :text) && (tag != :image) => {
+            (k == :border) && (tag == :Box) => {
+                Slides.check_group(me, "border", v, [size=:num, color=:color])
+            }
+            (k == :anim) && (tag != :text) && (tag != :image) && (tag != :Box) => {
                 Slides.check_anim(me, v)
             }
             else => Slides.err(me, "unknown field : " ++ tostring(k))
@@ -214,6 +218,12 @@ func Slides.check_block (loc, n) {
             if #n != 0 {
                 Slides.err(me, "expected no entries")
             }
+        }
+        tag == :Box => {
+            if #n != 1 {
+                Slides.err(me, "expected a single block")
+            }
+            Slides.check_block(Slides.sub(me, 0, n@0), n@0)
         }
         tag == :image => {
             Slides.check_text(me, n)
@@ -724,16 +734,22 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
                 if ist.anchor == nil {
                     set ist.anchor = :NW
                 }
-                if k.tag == :image {
+                ifs {
+                  k.tag == :image => {
                     set f = Slides.lay_image(k, [x=ix, y=cy, w=iw, h=h], ist, me, true)
                     set f.w = f.img.w
-                } else {
+                  }
+                  k.tag == :Box => {
+                    set f = Slides.lay_box(k, [x=ix, y=cy, w=iw, h=h], ist, me, true)
+                  }
+                  else => {
                     val kst = Slides.style(ist, k)
                     val I = Slides.shrink([x=ix, y=cy, w=iw, h=h], Slides.own_pad(k))
                     set f = [
                         x=ix, y=cy, w=iw, h=h, bg=Slides.own_bg(k), step=kst.step,
                         kids=Slides.lay_split(k, 0, I, kst, me, k.tag == :Row),
                     ]
+                  }
                 }
                 set first = h
             }
@@ -789,6 +805,27 @@ func Slides.lay_contents (n, R, up, loc) {
     Slides.lay_list(list, R, up, loc)
 }
 
+;; A box: a single block, with a border inside its rectangle if it has
+;; `border=[size=, color=]` (the color of the text if absent), and its
+;; padding inside the border. With `fill`, the size in its `rect` was
+;; already used by who gave the rectangle.
+func Slides.lay_box (n, R, up, loc, fill) {
+    val st = Slides.style(up, n)
+    val B = if fill => R => Slides.box(n, R, st)
+    var bw = 0
+    var border = nil
+    if n.border {
+        set bw = math.max(1, math.floor((n.border.size || Slides.dflt.border) * Slides.H))
+        set border = [ w=bw, color=(n.border.color || st.fg) ]
+    }
+    val I = Slides.shrink(B, bw + Slides.own_pad(n))
+    [
+        x=B.x, y=B.y, w=B.w, h=B.h, bg=Slides.own_bg(n), step=st.step,
+        border=border,
+        kids=[ Slides.lay(n@0, I, Slides.kid(n, st, 0), Slides.sub(loc, 0, n@0)) ],
+    ]
+}
+
 ;; Resolves the block `n` in the rectangle `R`, with the style `up` of
 ;; its parent. Evaluates to its frame.
 func Slides.lay (n, R, up, loc) {
@@ -801,6 +838,7 @@ func Slides.lay (n, R, up, loc) {
         n.tag == :image => Slides.lay_image(n, R, up, me, false)
         n.tag == :List  => Slides.lay_list(n, R, up, me)
         n.tag == :Contents => Slides.lay_contents(n, R, up, me)
+        n.tag == :Box   => Slides.lay_box(n, R, up, me, false)
         else => {
             val st = Slides.style(up, n)
             val B = Slides.box(n, R, st)
@@ -912,6 +950,16 @@ func Slides.draw (f) {
         pico.set.pencil [ color=f.bg, style=:fill ]
         pico.output.draw.rect ['!', x=math.floor(f.x), y=math.floor(f.y),
             w=math.ceil(f.w), h=math.ceil(f.h), anchor=:NW]
+    }
+    if f.border {
+        val b = f.border
+        val x, y = math.floor(f.x), math.floor(f.y)
+        val w, h = math.ceil(f.w), math.ceil(f.h)
+        pico.set.pencil [ color=b.color, style=:fill ]
+        pico.output.draw.rect ['!', x=x, y=y, w=w, h=b.w, anchor=:NW]
+        pico.output.draw.rect ['!', x=x, y=y+h-b.w, w=w, h=b.w, anchor=:NW]
+        pico.output.draw.rect ['!', x=x, y=y, w=b.w, h=h, anchor=:NW]
+        pico.output.draw.rect ['!', x=x+w-b.w, y=y, w=b.w, h=h, anchor=:NW]
     }
     if f.img {
         val i = f.img
