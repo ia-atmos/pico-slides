@@ -30,7 +30,8 @@ nodes, as data, and the engine lays it out and shows it:
   with the anchors and the relative rectangles of pico.
 - Colors, fonts, and spaces are inherited down the tree.
 - A text keeps its lines and blanks as written, so code keeps its
-  indentation; `wrap=true` breaks long lines of prose. A text that does
+  indentation; `wrap=true` breaks long lines of prose. `:text.rich`
+  reads `**bold**`, `*italic*`, and `` `code` ``, as in Markdown. A text that does
   not fit in its rectangle is an error, when the document is loaded.
 - `anim=true` in a composite makes its children appear one per key,
   and `:Contents []` is the table of contents, made from the sections.

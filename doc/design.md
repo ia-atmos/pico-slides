@@ -61,6 +61,7 @@ Block   : :Row   [ Block* ]
         | :Box [ Block ]            ;; one block, with a border or not
         | STR                       ;; same as :text [ STR ]
 Text    : :text  [ STR ]
+        | :text.rich [ STR ]        ;; with **bold**, *italic*, `code`
 ```
 
 | Level | Tags | Where | Contains |
@@ -175,6 +176,40 @@ inherited.
 
 ```
 :text ["BIG", rect=['%', h=0.5]]    ;; a line is half the height of the cell
+```
+
+### Rich text: `:text.rich` (#53a, #63, #66d)
+
+`:text.rich` is a subtype of `:text`: it takes all that a text takes
+(`rect`, `anchor`, `color`, `font`, `wrap`), and reads its string with
+a small part of Markdown:
+
+| Markup | Effect |
+|---|---|
+| `**bold**` | the font `font.bold` |
+| `*italic*` | the font `font.italic` |
+| `` `code` `` | the font `font.mono`; nothing inside it is markup |
+| `\*`, `` \` ``, `\\` | the character as it is |
+
+- The fonts of the variants are fields of `font`, inherited field by
+  field: `font=[file=, bold=, italic=, mono=]`. A variant with no file
+  is drawn in the regular font.
+- A backslash before any other character is kept, so `"\n"` in code is
+  written as it is.
+- Code with its keywords in bold is a `:text.rich` whose `font.file` is
+  a mono font and `font.bold` its bold one; it needs no backticks.
+- Lines and blanks follow the rules of a text: as written, or broken
+  between words with `wrap=true`, also across words of other fonts.
+- The markup is read in the engine, over pico as it is (#63): each
+  piece of one font is drawn with its own call.
+
+```
+CODE = [ file="DejaVuSansMono.ttf", bold="DejaVuSansMono-Bold.ttf" ]
+
+:text.rich ["`printf` and `scanf` are in `<stdio.h>`."]
+:text.rich ['''**int** main (**void**) {
+    **return** 0;
+}''', font=CODE]
 ```
 
 ### A text that does not fit (#16)
@@ -340,7 +375,7 @@ font  = [ file=STR, size=NUM ]
 | `anchor` | any node | yes |
 | `wrap=true` | any node | yes |
 | `color=[fg=, bg=]` | any node | yes, field by field |
-| `font=[file=, size=]` | any node | yes, field by field |
+| `font=[file=, size=, bold=, italic=, mono=]` | any node | yes, field by field |
 | `cell=[gap=]` | any node | yes |
 | `cell=[pad=]` | any node | no (from `:Slides` and `:Section` to their slides) |
 

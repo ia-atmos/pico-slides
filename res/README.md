@@ -13,3 +13,6 @@
 - `DejaVuSans-Bold.ttf`: DejaVu Sans Bold, of the same project and
   license, from the same package. It is the font of the titles in the
   pilot of LP1 (`exs/lp1/`).
+- `DejaVuSansMono-Bold.ttf`: DejaVu Sans Mono Bold, of the same project
+  and license, from the same package. It is the font of the keywords of
+  code, in bold.
