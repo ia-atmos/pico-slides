@@ -192,8 +192,10 @@ a small part of Markdown:
 | `\*`, `` \` ``, `\\` | the character as it is |
 
 - The fonts of the variants are fields of `font`, inherited field by
-  field: `font=[file=, bold=, italic=, mono=]`. A variant with no file
-  is drawn in the regular font.
+  field: `font=[file=, bold=, italic=, mono=]`. They are optional: a
+  bold or italic with no file of its own is synthesized by pico from
+  the regular font (#67a), so a presentation may use a single font.
+  `mono` has no synthesis: with no file, code is in the regular font.
 - A backslash before any other character is kept, so `"\n"` in code is
   written as it is.
 - Code with its keywords in bold is a `:text.rich` whose `font.file` is

@@ -34,6 +34,10 @@ recommendation. Listed on 2026-11-25.
 | #64 | A `:Box` with a border fills the rectangle it receives; in LP1 each box fits its code | to discuss: a box that takes the size of its content |
 | #65 | Automatic line breaking (#12a) | #65b: off by default, `wrap=true` (inherited) turns it on; with no wrap, lines and blanks are as written; done |
 | #66 | The tag of formatted text | #66d: `:text.rich`, a subtype of `:text` |
+| #67 | One font for bold and italic | #67a: pico synthesizes them (env-pico#18, 662a659); `font.bold` and `font.italic` are optional; done |
+| #68 | Steps as tasks, or computed at load | open: the session withdrew its recommendation to move them to tasks; the structure is the main loop of Aurora |
+| #69 | A presentation may fail on a smaller window (overflow is an error, no aspect, no wrap) | open: recommended to always give `aspect`, and to check with `--pdf` |
+| #70 | Use the anchors and relative rects of pico in the engine | open: #70a `pico.in.rect` for the composition, #70b a layer per composite, #70c as it is |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.
