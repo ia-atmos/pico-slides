@@ -57,6 +57,8 @@ recommendation. Listed on 2026-11-25.
 | #76 | Redo the engine with the idioms of #75 (b) | open |
 | #77 | Excerpt, idiomatic: the default of `toc`, `Slides.flat`, an `if` as an expression over an optional field | shown 2026-11-26 |
 | #78 | Excerpt, bad: the generated slide is a node `:Slide [ :Contents [...] ]` with a tag that the check refuses | shown 2026-11-26; the fault is of the port: generated content should be laid out directly, not through a hidden tag |
+| #79 | Excerpt, idiomatic: `kinds@k`, `src/slides.atm:90`, a table as the description of a group of fields, indexed by the key in hand | shown 2026-11-26, with the rewrite of `@(name)` to `@name` (3 places, asked for all projects) |
+| #80 | Excerpt, bad: the cache of point sizes, `src/slides.atm:512`, a string key built by hand and a search by trial | shown 2026-11-26; the search is a workaround for pico (a text with an exact line height, env-pico#14); the key is of the port (a table per font would do) |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.

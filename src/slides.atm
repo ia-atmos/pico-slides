@@ -87,7 +87,7 @@ func Slides.check_group (loc, name, g, kinds) {
         Slides.err(loc, "invalid " ++ name ++ " : expected table")
     }
     loop k,v in g {
-        val kind = kinds@(k)
+        val kind = kinds@k
         if kind == nil {
             Slides.err(loc, "invalid " ++ name ++ " : unknown field : " ++ tostring(k))
         }
@@ -514,7 +514,7 @@ func Slides.cell_h (pt) {
 func Slides.pt (file, h) {
     val hh = math.max(2, math.floor(h))
     val key = (file || "") ++ ":" ++ hh
-    val old = Slides.pts@(key)
+    val old = Slides.pts@key
     if old {
         return old
     }
@@ -524,7 +524,7 @@ func Slides.pt (file, h) {
         until (pt <= 1) || (Slides.cell_h(pt) <= hh)
         set pt = pt - 1
     }
-    set Slides.pts@(key) = pt
+    set Slides.pts@key = pt
     pt
 }
 
