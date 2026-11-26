@@ -18,6 +18,11 @@ verbose, a workaround). Each excerpt takes a number of this
 session's sequence, and each bad one says why it is bad and what would
 make it better (the language, the environment, or the port) (2026-11-26).
 
+Rule of the author (2026-11-26, relayed by `atmos`): read
+`ia-atmos/lang` `.claude/plans/IDIOMS.md` before writing Atmos. When
+he corrects or approves an excerpt and a general rule comes out of it,
+send it to `atmos`, with its `pico-slides#N` and a before and an after.
+
 ## Waits for the author
 
 Each item has a number, a description, and the session's
