@@ -167,7 +167,7 @@ func Slides.kind.rect (loc, name, r) {
 func Slides.kind.title (loc, name, v) {
     ifs {
         Slides.isstr(v) => nil
-        Slides.istab(v) && (v ?? :text) => Slides.check_block(loc ++ " > title", v)
+        v ?? :text [] => Slides.check_block(loc ++ " > title", v)
         else => Slides.bad(loc, name, "string, :text, or :text.rich")
     }
 }
@@ -283,7 +283,7 @@ func Slides.check_slide (loc, n) {
 ;; Validates the document: raises an error with the place of the first
 ;; problem. Evaluates to the number of slides.
 func Slides.check (doc) {
-    if !(Slides.istab(doc) && (doc.tag == :Slides)) {
+    if !(doc ?? :Slides []) {
         Slides.err("document", "expected :Slides [...]")
     }
     Slides.check_fields(":Slides", doc, Slides.fields.Slides, false)
@@ -291,17 +291,17 @@ func Slides.check (doc) {
     loop i in #doc {
         val s = doc@i
         ifs {
-            Slides.istab(s) && (s.tag == :Slide) => {
+            s ?? :Slide [] => {
                 set n = n + 1
                 Slides.check_slide("slide " ++ n, s)
             }
-            Slides.istab(s) && (s.tag == :Section) => {
+            s ?? :Section [] => {
                 val me = ":Slides > " ++ i ++ ":Section"
                 Slides.check_fields(me, s, Slides.fields.Section, false)
                 Slides.kind.str(me, "title", s.title)
                 loop j in #s {
                     val ss = s@j
-                    if !(Slides.istab(ss) && (ss.tag == :Slide)) {
+                    if !(ss ?? :Slide []) {
                         Slides.err(me ++ " > " ++ j, "expected :Slide")
                     }
                     set n = n + 1
@@ -745,7 +745,7 @@ func Slides.rich (str, st, h, maxw) {
 
 ;; A plain text or a `:text.rich`, by the node `n` (nil for a string).
 func Slides.text_block (str, n, st, h, maxw) {
-    if Slides.istab(n) && (n ?? :text.rich) {
+    if n ?? :text.rich [] {
         Slides.rich(str, st, h, maxw)
     } else {
         Slides.wrap(str, st.file, h, maxw, st.wrap)
@@ -916,7 +916,7 @@ func Slides.lay_list_at (L, n, st, x, y, maxw, Hc, loc) {
     ;; the written markers, one for each item that is not a sublist,
     ;; and their space: the widest one, for the texts to align
     val marks = if !written => [] => (
-        iter.filter(#n, \{ !(Slides.istab(n@it) && (n@it ?? :List)) })
+        iter.filter(#n, \{ !(n@it ?? :List []) })
             -> iter.map(\(_, j) { Slides.wrap(Slides.mark_label(mark, j), st.file, line, 0, false) })
     )
     val widest = iter.max(marks, \{ it.w })

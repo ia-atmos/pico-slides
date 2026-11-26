@@ -65,7 +65,7 @@ recommendation. Listed on 2026-11-25.
 | #79 | Excerpt, idiomatic: `kinds@k`, `src/slides.atm:90`, a table as the description of a group of fields, indexed by the key in hand | shown 2026-11-26, with the rewrite of `@(name)` to `@name` (3 places, asked for all projects) |
 | #80 | Excerpt, bad (the key fixed in #76; the search stays): the cache of point sizes, `src/slides.atm:512`, a string key built by hand and a search by trial | shown 2026-11-26; the search is a workaround for pico (a text with an exact line height, env-pico#14); the key is of the port (a table per font would do) |
 | #81 | Excerpt, idiomatic: `Slides.fields` and `Slides.check_fields`, `src/slides.atm:178` and `:219`, the fields of each tag as data | shown 2026-11-26 |
-| #82 | Excerpt, bad: `Slides.istab`, `src/slides.atm:46`, a type test by hand because `??` is not safe on a string of the document (`"table" ?? :table` is true) | shown 2026-11-26; of the language: `??` mixes equality, type, and tag prefix |
+| #82 | Excerpt, bad: `Slides.istab`, `src/slides.atm:46`, a type test by hand because `??` is not safe on a string of the document (`"table" ?? :table` is true) | answered 2026-11-26 (a), as atmos-lang advised: a tag test on a value that may be a string is `v ?? :T []` (a table pattern), with no `Slides.istab` before it; done in the check, `Slides.text_block`, and the marks. Of the language: `??` mixes equality, type, and tag prefix |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.
