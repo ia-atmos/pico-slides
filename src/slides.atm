@@ -221,6 +221,11 @@ func Slides.check_block (loc, n) {
                     Slides.err(me, "invalid span : expected positive number")
                 }
             }
+            (k == :mark) && ((tag == :List) || (tag == :Contents)) => {
+                if !((v == :dot) || (v == :none) || (v == :num) || (v == :alpha) || Slides.isstr(v)) {
+                    Slides.err(me, "invalid mark : expected :dot, :none, :num, :alpha, or a string")
+                }
+            }
             (k == :border) && (tag == :Box) => {
                 Slides.check_group(me, "border", v, [size=:pos, color=:color])
             }
@@ -372,6 +377,7 @@ func Slides.style (up, n) {
         fg=up.fg, bg=up.bg, file=up.file, size=up.size,
         bold=up.bold, italic=up.italic, mono=up.mono,
         pad=up.pad, gap=up.gap, anchor=up.anchor, step=up.step, wrap=up.wrap,
+        mark=up.mark,
     ]
     if Slides.istab(n) {
         if n.color {
@@ -391,13 +397,14 @@ func Slides.style (up, n) {
         }
         if n.anchor != nil { set st.anchor = n.anchor }
         if n.wrap != nil { set st.wrap = n.wrap }
+        if n.mark != nil { set st.mark = n.mark }
     }
     st
 }
 
 func Slides.root () {
     val d = Slides.dflt
-    [ fg=d.fg, bg=d.bg, file=nil, size=d.size, pad=d.pad, gap=d.gap, anchor=nil, step=0, wrap=false ]
+    [ fg=d.fg, bg=d.bg, file=nil, size=d.size, pad=d.pad, gap=d.gap, anchor=nil, step=0, wrap=false, mark=:dot ]
 }
 
 ;; the background and the padding that a block sets itself
@@ -938,9 +945,41 @@ func Slides.lay_split (n, from, I, st, loc, row) {
 ;; height of its content. `Hc` is the height that the `rect.h` of an
 ;; item that is not a text refers to. Evaluates to a frame with the
 ;; dimension that the list takes.
+;; The marker of the item `j` (counting only the items that have one),
+;; for a `mark` that is written (:num, :alpha, or a string).
+func Slides.mark_label (mark, j) {
+    ifs {
+        mark == :num   => tostring(j+1) ++ "."
+        mark == :alpha => if j < 26 => (string.char(97+j) ++ ")") => (tostring(j+1) ++ ")")
+        else           => mark
+    }
+}
+
 func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
     val line = math.floor(st.size * Slides.H)
-    val indent = math.floor(line * 1.2)
+    val mark = st.mark || :dot
+    val written = (mark != :dot) && (mark != :none)
+    ;; the space of the markers: the widest one, for the texts to align
+    var labw = 0
+    if written {
+        var j = 0
+        loop i in #n {
+            val k = n@i
+            val kt = if Slides.isstr(k) => :text => k.tag
+            if (kt == :List) || (kt == :Contents) {
+                skip
+            }
+            val b = Slides.wrap(Slides.mark_label(mark, j), st.file, line, 1.0e9, false)
+            set labw = math.max(labw, b.w)
+            set j = j + 1
+        }
+    }
+    val indent = ifs {
+        mark == :none => 0
+        written       => math.floor(labw + line*0.4)
+        else          => math.floor(line * 1.2)
+    }
+    var nmark = 0
     val gap = st.gap * Slides.H
     val out = [ x=x, y=y, w=0, h=0, bg=nil, kids=[], dots=[], fg=st.fg, step=st.step ]
     var cy = y
@@ -1006,7 +1045,18 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
                 set first = h
             }
         }
-        if (ktag != :List) && (ktag != :Contents) {
+        if written && (ktag != :List) && (ktag != :Contents) {
+            ;; a written marker, aligned to the right of its space, in the
+            ;; color of the text of the item
+            val b = Slides.wrap(Slides.mark_label(mark, nmark), st.file, line, 1.0e9, false)
+            Slides.lines_at(b, x + labw - b.w, cy, 1)
+            set out.kids@+ = [
+                x=x, y=cy, w=labw, h=b.h, bg=nil, step=cst.step,
+                lines=b.lines, pt=b.pt, fg=(f.fg || st.fg), file=st.file,
+            ]
+            set nmark = nmark + 1
+        }
+        if (mark == :dot) && (ktag != :List) && (ktag != :Contents) {
             val d = math.max(2, math.floor(line * 0.3))
             set out.dots@+ = [
                 step = cst.step,
@@ -1043,7 +1093,7 @@ func Slides.lay_contents (n, R, up, loc) {
     val st = Slides.style(up, n)
     val dim = pico.color.mix(st.fg, st.bg)
     val list = :List [
-        rect=n.rect, span=n.span, anchor=n.anchor, anim=n.anim,
+        rect=n.rect, span=n.span, anchor=n.anchor, anim=n.anim, mark=n.mark,
         color=n.color, font=n.font, cell=n.cell,
     ]
     loop i in #Slides.sections {

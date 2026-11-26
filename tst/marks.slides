@@ -1,0 +1,24 @@
+;; the marker of a :List: mark=:dot (the default), :none, :num, :alpha,
+;; or a string
+:Slides [ font=[file="../res/DejaVuSans.ttf", size=0.045],
+    :Slide [ title="Markers",
+        :Row [
+            :List [ mark=:num,
+                "Introduction",
+                :text ["Objectives, in red", color=[fg=:red]],
+                :List [ mark=:alpha, "first", "second" ],
+                "Conclusion",
+            ],
+            :List [ mark="–",
+                "a dash",
+                "as the marker",
+                :List [ "inherited" ],
+            ],
+            :List [ mark=:none, "no marker", "no indentation" ],
+        ],
+        :Row [
+            :List [ mark=:num, anim=true, "one", "two", "three" ],
+            :List [ mark=:num, font=[size=0.022], cell=[gap=0], "1", "2", "3", "4", "5", "6", "7", "8", "9", "ten: the numbers align" ],
+        ],
+    ],
+]

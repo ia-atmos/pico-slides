@@ -16,6 +16,7 @@ shots anim     anim.slides     960 540 31 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:
 shots box      box.slides      960 540  3 -                                 2
 shots rich     rich.slides     960 540  6 3:dn:Right                        2 5
 shots contents-in-list contents-in-list.slides 960 540 3 -               2
+shots marks    marks.slides    960 540  5 3:dn:Right                        2 4
 shots contents contents.slides 960 540  8 4:dn:Right,6:dn:Right             2 5 7
 shots theme    theme.slides    960 540  3 -                                 2
 shots builtin  builtin.slides  640 360  3 -                                 2
@@ -49,6 +50,7 @@ refuse box-border       "slides : slide 1 > 0:Box : invalid border : unknown fie
 refuse bad-wrap         "slides : slide 1 > 0:text : invalid wrap : expected true or false"
 refuse bad-title        "slides : slide 1 : invalid title : expected string, :text, or :text.rich"
 refuse font-size-zero   "slides : slide 1 > 0:text : invalid font.size : expected positive number"
+refuse bad-mark         "slides : slide 1 > 0:List : invalid mark : expected :dot, :none, :num, :alpha, or a string"
 refuse bad-span         "slides : slide 1 > 0:text : invalid span"
 refuse bad-aspect       "slides : :Slides : invalid aspect : expected [w, h]"
 refuse fit-in-doc       "slides : :Slides : unknown field : fit"
