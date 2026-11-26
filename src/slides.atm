@@ -19,10 +19,10 @@ pin Slides = [
     CW = 0,             ;; the dimension of the world now, in pixels
     CH = 0,
     sections = [],      ;; the titles of the sections, during a layout
-    section = nil,      ;; the index of the section of the slide in layout
     step = 0,           ;; the step of the current slide that is shown
     ctr  = 0,           ;; the last step given, during the layout of a slide
-    pts = [],           ;; cache: font and line height -> point size
+    pts = [],           ;; cache: font -> line height -> point size
+    kind = [],          ;; the kinds of values of a field (see CHECK)
     ;; defaults (provisional, see doc/design.md)
     dflt = [
         fg    = :black,
@@ -66,12 +66,6 @@ func Slides.isnum (v) {
 ;; CHECK
 ;; ------------------------------------------------------------------------
 
-func Slides.is_block (tag) {
-    (tag == :Row) || (tag == :Col) || (tag == :List) || (tag == :text) ||
-        (tag == :text.rich) ||
-        (tag == :image) || (tag == :Box)
-}
-
 func Slides.is_anchor (a) {
     if Slides.isstr(a) {
         (a==:C) || (a==:N) || (a==:S) || (a==:W) || (a==:E) ||
@@ -81,89 +75,76 @@ func Slides.is_anchor (a) {
     }
 }
 
-;; the fields of a group, as in color=[fg=, bg=]
-func Slides.check_group (loc, name, g, kinds) {
-    if !Slides.istab(g) {
-        Slides.err(loc, "invalid " ++ name ++ " : expected table")
-    }
-    loop k,v in g {
-        val kind = kinds@k
-        if kind == nil {
-            Slides.err(loc, "invalid " ++ name ++ " : unknown field : " ++ tostring(k))
-        }
-        ifs {
-            kind == :num => {
-                if !(Slides.isnum(v) && (v >= 0)) {
-                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected number")
-                }
-            }
-            kind == :pos => {
-                if !(Slides.isnum(v) && (v > 0)) {
-                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected positive number")
-                }
-            }
-            kind == :str => {
-                if !Slides.isstr(v) {
-                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected string")
-                }
-            }
-            kind == :file => {
-                if !Slides.isstr(v) {
-                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected string")
-                }
-                val f = io.open(v)
-                if f == nil {
-                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : file not found : " ++ v)
-                }
-            }
-            kind == :color => {
-                val ok = catch true {
-                    pico.color.alpha(v, 0xFF)
-                }
-                if !ok {
-                    Slides.err(loc, "invalid " ++ name ++ "." ++ k ++ " : expected color")
-                }
-            }
-        }
+func Slides.bad (loc, name, what) {
+    Slides.err(loc, "invalid " ++ name ++ " : expected " ++ what)
+}
+
+;; The kinds of values that a field takes: each is a function that
+;; raises an error if the value `v` of the field `name` is not of it.
+
+func Slides.kind.bool (loc, name, v) {
+    if type(v) != 'boolean' {
+        Slides.bad(loc, name, "true or false")
     }
 }
 
-;; the fields that any node accepts
-func Slides.check_common (loc, n, k, v) {
-    ifs {
-        k == :tag => true
-        k == :color => {
-            Slides.check_group(loc, "color", v, [fg=:color, bg=:color])
-            true
-        }
-        k == :font => {
-            Slides.check_group(loc, "font", v,
-                [file=:file, size=:pos, bold=:file, italic=:file, mono=:file])
-            true
-        }
-        k == :cell => {
-            Slides.check_group(loc, "cell", v, [pad=:num, gap=:num])
-            true
-        }
-        k == :anchor => {
-            if !Slides.is_anchor(v) {
-                Slides.err(loc, "invalid anchor")
-            }
-            true
-        }
-        k == :wrap => {
-            if type(v) != 'boolean' {
-                Slides.err(loc, "invalid wrap : expected true or false")
-            }
-            true
-        }
-        else => false
+func Slides.kind.num (loc, name, v) {
+    if !(Slides.isnum(v) && (v >= 0)) {
+        Slides.bad(loc, name, "number")
     }
 }
 
-func Slides.check_rect (loc, r) {
+func Slides.kind.pos (loc, name, v) {
+    if !(Slides.isnum(v) && (v > 0)) {
+        Slides.bad(loc, name, "positive number")
+    }
+}
+
+func Slides.kind.str (loc, name, v) {
+    if !Slides.isstr(v) {
+        Slides.bad(loc, name, "string")
+    }
+}
+
+func Slides.kind.file (loc, name, v) {
+    Slides.kind.str(loc, name, v)
+    if io.open(v) == nil {
+        Slides.err(loc, "invalid " ++ name ++ " : file not found : " ++ v)
+    }
+}
+
+func Slides.kind.color (loc, name, v) {
+    val ok = catch true {
+        pico.color.alpha(v, 0xFF)
+    }
+    if !ok {
+        Slides.bad(loc, name, "color")
+    }
+}
+
+func Slides.kind.anchor (loc, name, v) {
+    if !Slides.is_anchor(v) {
+        Slides.err(loc, "invalid " ++ name)
+    }
+}
+
+func Slides.kind.mark (loc, name, v) {
+    if !Slides.isstr(v) {
+        Slides.bad(loc, name, ":dot, :none, :num, :alpha, or a string")
+    }
+}
+
+func Slides.kind.aspect (loc, name, v) {
+    if !(Slides.istab(v) && (#v == 2) && Slides.isnum(v@0) && Slides.isnum(v@1) &&
+         (v@0 > 0) && (v@1 > 0))
+    {
+        Slides.bad(loc, name, "[w, h]")
+    }
+}
+
+func Slides.kind.rect (loc, name, r) {
     if !(Slides.istab(r) && (r@0 == '%')) {
-        Slides.err(loc, "invalid rect : expected ['%', ...]")
+        Slides.bad(loc, name, "['%', ...]")
     }
     loop k,v in r {
         ifs {
@@ -182,16 +163,92 @@ func Slides.check_rect (loc, r) {
         }
     }
     if (r.x == nil) != (r.y == nil) {
-        Slides.err(loc, "invalid rect : expected both x and y, or none")
+        Slides.bad(loc, name, "both x and y, or none")
     }
     if ((r.w != nil) && (r.w <= 0)) || ((r.h != nil) && (r.h <= 0)) {
-        Slides.err(loc, "invalid rect : expected positive w and h")
+        Slides.bad(loc, name, "positive w and h")
+    }
+}
+
+;; the title of a slide: a string, or a text with its own style
+func Slides.kind.title (loc, name, v) {
+    ifs {
+        Slides.isstr(v) => nil
+        Slides.istab(v) && (v ?? :text) => Slides.check_block(loc ++ " > title", v)
+        else => Slides.bad(loc, name, "string, :text, or :text.rich")
+    }
+}
+
+;; The fields of each tag, each with its kind. A kind that is a table is
+;; a group, as `color=[fg=, bg=]`, with the kind of each of its fields.
+;; `common` is for all nodes, and `block` for all blocks.
+set Slides.fields = [
+    common  = [
+        color  = [ fg=:color, bg=:color ],
+        font   = [ file=:file, size=:pos, bold=:file, italic=:file, mono=:file ],
+        cell   = [ pad=:num, gap=:num ],
+        anchor = :anchor,
+        wrap   = :bool,
+    ],
+    block   = [ rect=:rect, span=:pos ],
+    Slides  = [ aspect=:aspect, toc=:bool ],
+    Section = [ title=:str, toc=:bool ],
+    Slide   = [ title=:title, anim=:bool ],
+]
+
+;; the blocks, each with the fields that are only its own
+set Slides.blocks = [
+    Row   = [ anim=:bool ],
+    Col   = [ anim=:bool ],
+    List  = [ anim=:bool, mark=:mark ],
+    Box   = [ border=[ size=:pos, color=:color ] ],
+    text  = [],
+    image = [],
+    @("text.rich") = [],
+]
+
+func Slides.check_group (loc, name, g, kinds) {
+    if !Slides.istab(g) {
+        Slides.bad(loc, name, "table")
+    }
+    loop k,v in g {
+        val kind = kinds@k
+        if kind == nil {
+            Slides.err(loc, "invalid " ++ name ++ " : unknown field : " ++ tostring(k))
+        }
+        val f = Slides.kind@kind
+        f(loc, name ++ "." ++ k, v)
+    }
+}
+
+;; Checks the named fields of the node `n`: `own` has those of its tag,
+;; and `block` tells if it also takes those of a block.
+func Slides.check_fields (loc, n, own, block) {
+    loop k,v in n {
+        if Slides.isnum(k) {
+            skip
+        }
+        val kind = own@k || (block && Slides.fields.block@k) || Slides.fields.common@k
+        ifs {
+            !kind => Slides.err(loc, "unknown field : " ++ tostring(k))
+            Slides.istab(kind) => Slides.check_group(loc, k, v, kind)
+            else => {
+                val f = Slides.kind@kind
+                f(loc, k, v)
+            }
+        }
     }
 }
 
 func Slides.check_text (loc, n) {
     if (#n != 1) || !Slides.isstr(n@0) {
         Slides.err(loc, "expected a single string")
+    }
+}
+
+func Slides.check_kids (loc, n) {
+    loop i in #n {
+        Slides.check_block(Slides.sub(loc, i, n@i), n@i)
     }
 }
 
@@ -202,106 +259,32 @@ func Slides.check_block (loc, n) {
     if !(Slides.istab(n) && Slides.isstr(n.tag)) {
         Slides.err(loc, "expected a block")
     }
-    val tag = n.tag
-    val me = loc
-    if !Slides.is_block(tag) {
-        Slides.err(loc, "unknown block : :" ++ tag)
+    val own = Slides.blocks@(n.tag)
+    if own == nil {
+        Slides.err(loc, "unknown block : :" ++ n.tag)
     }
-    loop k,v in n {
-        if Slides.isnum(k) {
-            skip
-        }
-        if Slides.check_common(me, n, k, v) {
-            skip
-        }
-        ifs {
-            k == :rect => Slides.check_rect(me, v)
-            k == :span => {
-                if !(Slides.isnum(v) && (v > 0)) {
-                    Slides.err(me, "invalid span : expected positive number")
-                }
-            }
-            (k == :mark) && (tag == :List) => {
-                if !((v == :dot) || (v == :none) || (v == :num) || (v == :alpha) || Slides.isstr(v)) {
-                    Slides.err(me, "invalid mark : expected :dot, :none, :num, :alpha, or a string")
-                }
-            }
-            (k == :border) && (tag == :Box) => {
-                Slides.check_group(me, "border", v, [size=:pos, color=:color])
-            }
-            (k == :anim) && (tag != :text) && (tag != :text.rich) && (tag != :image) && (tag != :Box) => {
-                Slides.check_anim(me, v)
-            }
-            else => Slides.err(me, "unknown field : " ++ tostring(k))
-        }
-    }
+    Slides.check_fields(loc, n, own, true)
     ifs {
-        (tag == :text) || (tag == :text.rich) => Slides.check_text(me, n)
-        tag == :Box => {
+        n ?? :text => Slides.check_text(loc, n)
+        n ?? :image => {
+            Slides.check_text(loc, n)
+            if io.open(n@0) == nil {
+                Slides.err(loc, "file not found : " ++ n@0)
+            }
+        }
+        n ?? :Box => {
             if #n != 1 {
-                Slides.err(me, "expected a single block")
+                Slides.err(loc, "expected a single block")
             }
-            Slides.check_block(Slides.sub(me, 0, n@0), n@0)
+            Slides.check_kids(loc, n)
         }
-        tag == :image => {
-            Slides.check_text(me, n)
-            val f = io.open(n@0)
-            if f == nil {
-                Slides.err(me, "file not found : " ++ n@0)
-            }
-        }
-        else => {
-            loop i in #n {
-                Slides.check_block(Slides.sub(me, i, n@i), n@i)
-            }
-        }
-    }
-}
-
-func Slides.check_title (loc, n) {
-    val t = n.title
-    ifs {
-        t == nil => nil
-        Slides.isstr(t) => nil
-        Slides.istab(t) && ((t.tag == :text) || (t.tag == :text.rich)) =>
-            Slides.check_block(loc ++ " > title", t)
-        else => Slides.err(loc, "invalid title : expected string, :text, or :text.rich")
-    }
-}
-
-;; `toc=false`: no slide with the table of contents at the start of a
-;; section (see doc/design.md)
-func Slides.check_toc (loc, v) {
-    if type(v) != 'boolean' {
-        Slides.err(loc, "invalid toc : expected true or false")
-    }
-}
-
-;; `anim=true`: the children appear one per key (see doc/design.md)
-func Slides.check_anim (loc, v) {
-    if type(v) != 'boolean' {
-        Slides.err(loc, "invalid anim : expected true or false")
+        else => Slides.check_kids(loc, n)
     }
 }
 
 func Slides.check_slide (loc, n) {
-    loop k,v in n {
-        if Slides.isnum(k) {
-            skip
-        }
-        if Slides.check_common(loc, n, k, v) {
-            skip
-        }
-        ifs {
-            k == :title => nil
-            k == :anim  => Slides.check_anim(loc, v)
-            else => Slides.err(loc, "unknown field : " ++ tostring(k))
-        }
-    }
-    Slides.check_title(loc, n)
-    loop i in #n {
-        Slides.check_block(Slides.sub(loc, i, n@i), n@i)
-    }
+    Slides.check_fields(loc, n, Slides.fields.Slide, false)
+    Slides.check_kids(loc, n)
 }
 
 ;; Validates the document: raises an error with the place of the first
@@ -310,60 +293,29 @@ func Slides.check (doc) {
     if !(Slides.istab(doc) && (doc.tag == :Slides)) {
         Slides.err("document", "expected :Slides [...]")
     }
-    loop k,v in doc {
-        if Slides.isnum(k) {
-            skip
-        }
-        if Slides.check_common(":Slides", doc, k, v) {
-            skip
-        }
-        ifs {
-            k == :toc => Slides.check_toc(":Slides", v)
-            k == :aspect => {
-                if !(Slides.istab(v) && Slides.isnum(v@0) && Slides.isnum(v@1) &&
-                     (v@0 > 0) && (v@1 > 0) && (#v == 2))
-                {
-                    Slides.err(":Slides", "invalid aspect : expected [w, h]")
-                }
-            }
-            else => Slides.err(":Slides", "unknown field : " ++ tostring(k))
-        }
-    }
+    Slides.check_fields(":Slides", doc, Slides.fields.Slides, false)
     var n = 0
     loop i in #doc {
         val s = doc@i
-        if !(Slides.istab(s) && ((s.tag == :Slide) || (s.tag == :Section))) {
-            Slides.err(":Slides > " ++ i, "expected :Slide or :Section")
-        }
-        if s.tag == :Slide {
-            set n = n + 1
-            Slides.check_slide("slide " ++ n, s)
-        } else {
-            val me = ":Slides > " ++ i ++ ":Section"
-            loop k,v in s {
-                if Slides.isnum(k) {
-                    skip
-                }
-                if Slides.check_common(me, s, k, v) {
-                    skip
-                }
-                ifs {
-                    k == :title => nil
-                    k == :toc   => Slides.check_toc(me, v)
-                    else => Slides.err(me, "unknown field : " ++ tostring(k))
-                }
-            }
-            if !Slides.isstr(s.title) {
-                Slides.err(me, "invalid title : expected string")
-            }
-            loop j in #s {
-                val ss = s@j
-                if !(Slides.istab(ss) && (ss.tag == :Slide)) {
-                    Slides.err(me ++ " > " ++ j, "expected :Slide")
-                }
+        ifs {
+            Slides.istab(s) && (s.tag == :Slide) => {
                 set n = n + 1
-                Slides.check_slide("slide " ++ n, ss)
+                Slides.check_slide("slide " ++ n, s)
             }
+            Slides.istab(s) && (s.tag == :Section) => {
+                val me = ":Slides > " ++ i ++ ":Section"
+                Slides.check_fields(me, s, Slides.fields.Section, false)
+                Slides.kind.str(me, "title", s.title)
+                loop j in #s {
+                    val ss = s@j
+                    if !(Slides.istab(ss) && (ss.tag == :Slide)) {
+                        Slides.err(me ++ " > " ++ j, "expected :Slide")
+                    }
+                    set n = n + 1
+                    Slides.check_slide("slide " ++ n, ss)
+                }
+            }
+            else => Slides.err(":Slides > " ++ i, "expected :Slide or :Section")
         }
     }
     n
@@ -513,10 +465,13 @@ func Slides.cell_h (pt) {
 ;; current font: pico takes a point size, and its line is higher.
 func Slides.pt (file, h) {
     val hh = math.max(2, math.floor(h))
-    val key = (file || "") ++ ":" ++ hh
-    val old = Slides.pts@key
-    if old {
-        return old
+    val name = file || ""
+    if !Slides.pts@name {
+        set Slides.pts@name = []
+    }
+    val pts = Slides.pts@name       ;; of this font: line height -> point size
+    if pts@hh {
+        return pts@hh
     }
     Slides.pencil_font(file)
     var pt = math.max(1, (hh*hh) // Slides.cell_h(hh))
@@ -524,7 +479,7 @@ func Slides.pt (file, h) {
         until (pt <= 1) || (Slides.cell_h(pt) <= hh)
         set pt = pt - 1
     }
-    set Slides.pts@key = pt
+    set pts@hh = pt
     pt
 }
 
@@ -797,7 +752,7 @@ func Slides.rich (str, st, h, maxw) {
 
 ;; A plain text or a `:text.rich`, by the node `n` (nil for a string).
 func Slides.text_block (str, n, st, h, maxw) {
-    if Slides.istab(n) && (n.tag == :text.rich) {
+    if Slides.istab(n) && (n ?? :text.rich) {
         Slides.rich(str, st, h, maxw)
     } else {
         Slides.wrap(str, st.file, h, maxw, st.wrap)
@@ -965,21 +920,14 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
     val line = math.floor(st.size * Slides.H)
     val mark = st.mark || :dot
     val written = (mark != :dot) && (mark != :none)
-    ;; the space of the markers: the widest one, for the texts to align
-    var labw = 0
-    if written {
-        var j = 0
-        loop i in #n {
-            val k = n@i
-            val kt = if Slides.isstr(k) => :text => k.tag
-            if (kt == :List) || (kt == :Contents) {
-                skip
-            }
-            val b = Slides.wrap(Slides.mark_label(mark, j), st.file, line, 1.0e9, false)
-            set labw = math.max(labw, b.w)
-            set j = j + 1
-        }
-    }
+    ;; the written markers, one for each item that is not a sublist,
+    ;; and their space: the widest one, for the texts to align
+    val marks = if !written => [] => (
+        iter.filter(#n, \{ !(Slides.istab(n@it) && (n@it ?? :List)) })
+            -> iter.map(\(_, j) { Slides.wrap(Slides.mark_label(mark, j), st.file, line, 0, false) })
+    )
+    val widest = iter.max(marks, \{ it.w })
+    val labw = if widest => widest.w => 0
     val indent = ifs {
         mark == :none => 0
         written       => math.floor(labw + line*0.4)
@@ -999,7 +947,7 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
         var f
         var first = line        ;; the height of the first line of the item
         ifs {
-            (ktag == :text) || (ktag == :text.rich) => {
+            ktag ?? :text => {
                 val str = if Slides.isstr(k) => k => k@0
                 val ist = Slides.style(cst, k)
                 if Slides.istab(k) && k.rect {
@@ -1036,9 +984,6 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
                   k.tag == :Box => {
                     set f = Slides.lay_box(k, [x=ix, y=cy, w=iw, h=h], ist, me, true)
                   }
-                  k.tag == :Contents => {
-                    set f = Slides.lay_contents(k, [x=ix, y=cy, w=iw, h=h], ist, me)
-                  }
                   else => {
                     val kst = Slides.style(ist, k)
                     val I = Slides.shrink([x=ix, y=cy, w=iw, h=h], Slides.own_pad(k))
@@ -1051,10 +996,10 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
                 set first = h
             }
         }
-        if written && (ktag != :List) && (ktag != :Contents) {
+        if written && (ktag != :List) {
             ;; a written marker, aligned to the right of its space, in the
             ;; color of the text of the item
-            val b = Slides.wrap(Slides.mark_label(mark, nmark), st.file, line, 1.0e9, false)
+            val b = marks@nmark
             Slides.lines_at(b, x + labw - b.w, cy, 1)
             set out.kids@+ = [
                 x=x, y=cy, w=labw, h=b.h, bg=nil, step=cst.step,
@@ -1062,7 +1007,7 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
             ]
             set nmark = nmark + 1
         }
-        if (mark == :dot) && (ktag != :List) && (ktag != :Contents) {
+        if (mark == :dot) && (ktag != :List) {
             val d = math.max(2, math.floor(line * 0.3))
             set out.dots@+ = [
                 step = cst.step,
@@ -1093,25 +1038,16 @@ func Slides.lay_list (n, R, up, loc) {
     [ x=B.x, y=B.y, w=B.w, h=B.h, bg=Slides.own_bg(n), kids=[f], step=st.step ]
 }
 
-;; The table of contents: a list with the titles of the sections, with
-;; those of the other sections dimmed. It is not a block of the format
-;; (#11b): the engine makes it, in the slide that starts a section.
-func Slides.lay_contents (n, R, up, loc) {
-    val st = Slides.style(up, n)
-    val dim = pico.color.mix(st.fg, st.bg)
-    val list = :List [
-        rect=n.rect, span=n.span, anchor=n.anchor, anim=n.anim, mark=n.mark,
-        color=n.color, font=n.font, cell=n.cell,
-    ]
+;; The slide that starts the section `sec`, made by the engine: a list
+;; with the titles of the sections, those of the others dimmed (#56).
+func Slides.lay_toc (sec, up, loc) {
+    val dim = pico.color.mix(up.fg, up.bg)
+    val list = :List [ anchor=:C ]
     loop i in #Slides.sections {
         val title = Slides.sections@i
-        if (Slides.section == nil) || (Slides.section == i) {
-            set list@+ = title
-        } else {
-            set list@+ = :text [ title, color=[fg=dim] ]
-        }
+        set list@+ = if i == sec => title => :text [ title, color=[fg=dim] ]
     }
-    Slides.lay_list(list, R, up, loc)
+    Slides.lay_slide(:Slide [ list ], up, loc)
 }
 
 ;; A box: a single block, with a border inside its rectangle if it has
@@ -1143,10 +1079,9 @@ func Slides.lay (n, R, up, loc) {
     }
     val me = loc
     ifs {
-        (n.tag == :text) || (n.tag == :text.rich) => Slides.lay_text(n@0, n, R, up, me)
+        n ?? :text      => Slides.lay_text(n@0, n, R, up, me)
         n.tag == :image => Slides.lay_image(n, R, up, me, false)
         n.tag == :List  => Slides.lay_list(n, R, up, me)
-        n.tag == :Contents => Slides.lay_contents(n, R, up, me)
         n.tag == :Box   => Slides.lay_box(n, R, up, me, false)
         else => {
             val st = Slides.style(up, n)
@@ -1230,10 +1165,8 @@ func Slides.flat (doc) {
             ;; says `toc=false` (#56)
             val toc = if s.toc != nil => s.toc => (doc.toc != false)
             if toc {
-                set out@+ = [
-                    n = :Slide [ :Contents [ anchor=:C ] ],
-                    up=sst, section=sec, loc=("contents of section " ++ (sec+1)),
-                ]
+                set out@+ = [ toc=true, up=sst, section=sec,
+                              loc=("contents of section " ++ (sec+1)) ]
             }
             loop j in #s {
                 set num = num + 1
@@ -1254,8 +1187,9 @@ func Slides.layout (doc, w, h) {
     val flat = Slides.flat(doc)
     val out = []
     loop i in #flat {
-        set Slides.section = flat@i.section
-        set out@+ = Slides.lay_slide(flat@i.n, flat@i.up, flat@i.loc)
+        val e = flat@i
+        set out@+ = if e.toc => Slides.lay_toc(e.section, e.up, e.loc)
+                             => Slides.lay_slide(e.n, e.up, e.loc)
     }
     out
 }
@@ -1344,7 +1278,7 @@ task Slides.Frame (f) {
             spawn @kids Slides.Frame(f.kids@i)
         }
     }
-    await(false)
+    await false
 }
 
 ;; Sets the dimension of the world from the window and the `aspect` of
