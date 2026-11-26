@@ -1,0 +1,14 @@
+;; a section starts with its table of contents, unless toc=false
+:Slides [
+    font = [file="../res/DejaVuSans.ttf"],
+    :Slide [ title="Cover", "slide 1" ],
+    :Section [ title="Introduction",
+        :Slide [ title="In the first section", "slide 2" ],
+    ],
+    :Section [ title="Objectives", color=[bg=:navy, fg=:white],
+        :Slide [ "slide 3" ],
+    ],
+    :Section [ title="Appendix", toc=false,
+        :Slide [ "slide 4: its section has toc=false" ],
+    ],
+]

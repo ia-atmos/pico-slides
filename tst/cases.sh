@@ -15,9 +15,8 @@ shots names    names.slides    960 540  6 3:dn:Right                        2 5
 shots anim     anim.slides     960 540 31 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:Right,11:dn:Right,13:dn:Right,15:dn:Right,17:dn:Right,19:dn:Right,21:dn:Left,23:dn:Left,25:dn:Left,27:dn:End,29:dn:Home  2 4 6 8 10 12 14 16 18 20 22 24 26 28 30
 shots box      box.slides      960 540  3 -                                 2
 shots rich     rich.slides     960 540  6 3:dn:Right                        2 5
-shots contents-in-list contents-in-list.slides 960 540 3 -               2
 shots marks    marks.slides    960 540  5 3:dn:Right                        2 4
-shots contents contents.slides 960 540  8 4:dn:Right,6:dn:Right             2 5 7
+shots toc      toc.slides      960 540 14 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:Right,11:dn:Right  2 4 6 8 10 12
 shots theme    theme.slides    960 540  3 -                                 2
 shots builtin  builtin.slides  640 360  3 -                                 2
 shots square   layout.slides   500 500  3 -                                 2
@@ -27,7 +26,7 @@ RESIZE=3:500:500
 shots resize   layout.slides   960 540  6 -                                 2 5
 
 # the examples
-shots tour     ../exs/tour/tour.slides 960 540 15 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:Right,11:dn:Right,13:dn:Right  2 4 6 8 10 12 14
+shots tour     ../exs/tour/tour.slides 960 540 20 3:dn:Right,5:dn:Right,7:dn:Right,9:dn:Right,11:dn:Right,13:dn:Right,15:dn:Right,17:dn:Right  2 4 6 8 10 12 14 16 18
 shots program  ../exs/program/main.atm - - 6 3:dn:Right                     2 5
 
 refuse overflow-height  "slides : slide 1 > 0:Row > 1:Col > 0:text : text does not fit : height exceeds by"
@@ -42,7 +41,6 @@ refuse bad-color        "slides : slide 1 > 0:text : invalid color.fg : expected
 refuse bad-anchor       "slides : slide 1 : invalid anchor"
 refuse bad-rect         "slides : slide 1 > 0:text : invalid rect : expected both x and y, or none"
 refuse bad-rect-mode    "slides : slide 1 > 0:text : invalid rect : expected ['%', ...]"
-refuse contents-entries "slides : slide 1 > 0:Contents : expected no entries"
 refuse bad-anim         "slides : slide 1 > 0:List : invalid anim : expected true or false"
 refuse anim-in-text     "slides : slide 1 > 0:text : unknown field : anim"
 refuse box-two          "slides : slide 1 > 0:Box : expected a single block"
@@ -51,6 +49,8 @@ refuse bad-wrap         "slides : slide 1 > 0:text : invalid wrap : expected tru
 refuse bad-title        "slides : slide 1 : invalid title : expected string, :text, or :text.rich"
 refuse font-size-zero   "slides : slide 1 > 0:text : invalid font.size : expected positive number"
 refuse bad-mark         "slides : slide 1 > 0:List : invalid mark : expected :dot, :none, :num, :alpha, or a string"
+refuse contents-block   "slides : slide 1 > 0:Contents : unknown block : :Contents"
+refuse bad-toc          "slides : :Slides : invalid toc : expected true or false"
 refuse bad-span         "slides : slide 1 > 0:text : invalid span"
 refuse bad-aspect       "slides : :Slides : invalid aspect : expected [w, h]"
 refuse fit-in-doc       "slides : :Slides : unknown field : fit"
@@ -66,7 +66,7 @@ refuse list-image       "slides : slide 1 > 0:List > 1:image : a :image in a :Li
 refuse undefined-name   "invalid load : line 1 : undefined name : LOGO"
 
 # PDF: a page for each slide
-pdf pdf-tour   7 ../exs/tour/tour.slides
+pdf pdf-tour   9 ../exs/tour/tour.slides
 pdf pdf-lp1    9 ../exs/lp1/lp1-02-c.slides 1024 768
 pdf pdf-slides 4 sections.slides 640 360
 

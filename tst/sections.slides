@@ -1,5 +1,6 @@
-;; sections, the styles they give, and the keys
-:Slides [
+;; sections, the styles they give, and the keys (toc=false: only the
+;; slides that are written)
+:Slides [ toc=false,
     font = [file="../res/DejaVuSans.ttf"],
     :Slide [ title="Cover", "slide 1" ],
     :Section [ title="First", color=[bg=:navy, fg=:white],

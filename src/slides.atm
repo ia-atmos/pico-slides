@@ -69,7 +69,7 @@ func Slides.isnum (v) {
 func Slides.is_block (tag) {
     (tag == :Row) || (tag == :Col) || (tag == :List) || (tag == :text) ||
         (tag == :text.rich) ||
-        (tag == :image) || (tag == :Contents) || (tag == :Box)
+        (tag == :image) || (tag == :Box)
 }
 
 func Slides.is_anchor (a) {
@@ -221,7 +221,7 @@ func Slides.check_block (loc, n) {
                     Slides.err(me, "invalid span : expected positive number")
                 }
             }
-            (k == :mark) && ((tag == :List) || (tag == :Contents)) => {
+            (k == :mark) && (tag == :List) => {
                 if !((v == :dot) || (v == :none) || (v == :num) || (v == :alpha) || Slides.isstr(v)) {
                     Slides.err(me, "invalid mark : expected :dot, :none, :num, :alpha, or a string")
                 }
@@ -237,11 +237,6 @@ func Slides.check_block (loc, n) {
     }
     ifs {
         (tag == :text) || (tag == :text.rich) => Slides.check_text(me, n)
-        tag == :Contents => {
-            if #n != 0 {
-                Slides.err(me, "expected no entries")
-            }
-        }
         tag == :Box => {
             if #n != 1 {
                 Slides.err(me, "expected a single block")
@@ -271,6 +266,14 @@ func Slides.check_title (loc, n) {
         Slides.istab(t) && ((t.tag == :text) || (t.tag == :text.rich)) =>
             Slides.check_block(loc ++ " > title", t)
         else => Slides.err(loc, "invalid title : expected string, :text, or :text.rich")
+    }
+}
+
+;; `toc=false`: no slide with the table of contents at the start of a
+;; section (see doc/design.md)
+func Slides.check_toc (loc, v) {
+    if type(v) != 'boolean' {
+        Slides.err(loc, "invalid toc : expected true or false")
     }
 }
 
@@ -315,6 +318,7 @@ func Slides.check (doc) {
             skip
         }
         ifs {
+            k == :toc => Slides.check_toc(":Slides", v)
             k == :aspect => {
                 if !(Slides.istab(v) && Slides.isnum(v@0) && Slides.isnum(v@1) &&
                      (v@0 > 0) && (v@1 > 0) && (#v == 2))
@@ -343,8 +347,10 @@ func Slides.check (doc) {
                 if Slides.check_common(me, s, k, v) {
                     skip
                 }
-                if k != :title {
-                    Slides.err(me, "unknown field : " ++ tostring(k))
+                ifs {
+                    k == :title => nil
+                    k == :toc   => Slides.check_toc(me, v)
+                    else => Slides.err(me, "unknown field : " ++ tostring(k))
                 }
             }
             if !Slides.isstr(s.title) {
@@ -1087,8 +1093,9 @@ func Slides.lay_list (n, R, up, loc) {
     [ x=B.x, y=B.y, w=B.w, h=B.h, bg=Slides.own_bg(n), kids=[f], step=st.step ]
 }
 
-;; The table of contents: a list with the titles of the sections. In a
-;; slide of a section, the other sections are dimmed.
+;; The table of contents: a list with the titles of the sections, with
+;; those of the other sections dimmed. It is not a block of the format
+;; (#11b): the engine makes it, in the slide that starts a section.
 func Slides.lay_contents (n, R, up, loc) {
     val st = Slides.style(up, n)
     val dim = pico.color.mix(st.fg, st.bg)
@@ -1203,20 +1210,34 @@ func Slides.lay_slide (n, up, loc) {
 }
 
 ;; The slides of the document, in order, each with the style that it
-;; receives and the index of its section. Also collects the titles of
-;; the sections.
+;; receives, the index of its section, and its name for messages. A
+;; section starts with a generated slide, its table of contents. Also
+;; collects the titles of the sections.
 func Slides.flat (doc) {
     val out = []
     val root = Slides.style(Slides.root(), doc)
     vector.clear(Slides.sections)
+    var num = 0             ;; the slides that the document writes
     loop i in #doc {
         val s = doc@i
         if s.tag == :Slide {
-            set out@+ = [ n=s, up=root, section=nil ]
+            set num = num + 1
+            set out@+ = [ n=s, up=root, section=nil, loc=("slide " ++ num) ]
         } else {
             val sst = Slides.style(root, s)
+            val sec = #Slides.sections
+            ;; the table of contents, unless the section or the document
+            ;; says `toc=false` (#56)
+            val toc = if s.toc != nil => s.toc => (doc.toc != false)
+            if toc {
+                set out@+ = [
+                    n = :Slide [ :Contents [ anchor=:C ] ],
+                    up=sst, section=sec, loc=("contents of section " ++ (sec+1)),
+                ]
+            }
             loop j in #s {
-                set out@+ = [ n=s@j, up=sst, section=#Slides.sections ]
+                set num = num + 1
+                set out@+ = [ n=s@j, up=sst, section=sec, loc=("slide " ++ num) ]
             }
             set Slides.sections@+ = s.title
         }
@@ -1234,7 +1255,7 @@ func Slides.layout (doc, w, h) {
     val out = []
     loop i in #flat {
         set Slides.section = flat@i.section
-        set out@+ = Slides.lay_slide(flat@i.n, flat@i.up, "slide " ++ (i+1))
+        set out@+ = Slides.lay_slide(flat@i.n, flat@i.up, flat@i.loc)
     }
     out
 }
