@@ -34,7 +34,7 @@ nodes, as data, and the engine lays it out and shows it:
   reads `**bold**`, `*italic*`, and `` `code` ``, as in Markdown. A text that does
   not fit in its rectangle is an error, when the document is loaded.
 - `anim=true` in a composite makes its children appear one per key,
-  and `:Contents []` is the table of contents, made from the sections.
+  and a section starts with its table of contents, unless `toc=false`.
 - A file may define names for what repeats, and `include` a theme with
   the names that many presentations share.
 

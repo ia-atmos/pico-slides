@@ -26,7 +26,7 @@ recommendation. Listed on 2026-11-25.
 | Item | Description | Recommended |
 |---|---|---|
 | #48 | Where `aspect` and `fit` go: the document or the command line | done: `aspect` in the document; `./slides --fit=stretch|bars`, the `=` mandatory |
-| #11 | `:Contents []`, implemented by the session: a list of the titles of the sections, the others dimmed inside a section | confirm |
+| #11 | `:Contents []` as a block of the format | #11b (2026-11-26): removed; only the automatic `toc` |
 | #49 | The marker of a list item takes the color of the item's text | settled with #72 |
 | #50 | Convert the slides of the courses, starting with LP1 | pilot done by hand (#62a): `exs/lp1/lp1-02-c.slides`, 9 slides. Missing for a faithful copy: boxes that fit their code (#64), the balloon of slide 8 (#57), the gradient of the background |
 | #51 | `:Box`: a frame around its content | done: `:Box [ border=[size=, color=], <one block> ]` |
@@ -34,11 +34,11 @@ recommendation. Listed on 2026-11-25.
 | #53 | Formatted text: `**bold**`, `*italic*`, `` `code` `` inside a text | done (#53a, #66d): `:text.rich`, fonts in `font=[bold=, italic=, mono=]`; the LP1 pilot has its keywords in bold |
 | #54 | `anim=true` would hide the first child too, with a per-child way to show it from the start | decide together with #55, which gives that per-child field |
 | #55 | `step` back, as a field of a child: `step=false` shows it with its parent; a step local (in the parent's sequence) or global (of the slide) | `step=false` and a local `step=N` first; global steps when overlays (#57) need them |
-| #56 | A `:Section` shows the table of contents at its start, unless `toc=false` | off by default, turned on with `toc=true` in `:Slides` or in a `:Section`, so documents do not gain slides nobody wrote |
+| #56 | A `:Section` starts with its table of contents, unless `toc=false` | done with #11b: on by default (the author's idea), `toc=false` in a `:Section` or in `:Slides`. The look of the slide (no title, centered) was chosen by the session |
 | #57 | Overlays: arrows, rectangles, and texts over the objects of a slide, which needs an id for an object | a field `id` on any block, and overlay blocks that point at ids; after #55, since an overlay usually comes at a step |
 | #58 | Send the vocabulary to `paper-media` | approved by the author on 2026-11-25; see the log below |
 | #59 | The readme: what it says of Aurora and of Thiago Presotto, and whether he is told | review the paragraph; telling him is the author's |
-| #60 | A key that shows the table of contents at any time (the `T` of Aurora) | after #11; a slide made of `:Contents []` that the key shows and hides |
+| #60 | A key that shows the table of contents at any time (the `T` of Aurora) | open; it would show the same generated slide |
 | #61 | References (the `Ref` table and `Reference` slide of Aurora) | later; when needed, a block made from a table of references, as `:Contents` is made from the sections |
 | #62 | How to convert LP1: by hand or with a converter of `.fodp` | #62a, by hand, the class of C as a pilot |
 | #63 | Formatted text (#53): in pico or in the engine | the engine, over pico as it is (fonts by file for bold and italic); confirmed 2026-11-25 |
@@ -53,6 +53,10 @@ recommendation. Listed on 2026-11-25.
 | #72 | The marker of a `:List` | #72a: `mark=:dot|:none|:num|:alpha|"string"`, inherited by sublists; done |
 | #73 | Excerpt, idiomatic: `Slides.mark_label`, `src/slides.atm:950`, an `ifs` as an expression | shown 2026-11-26 |
 | #74 | Excerpt, bad: the width of the markers, `src/slides.atm:963`, a second pass over the items with a hand counter, measured through `Slides.wrap` | shown 2026-11-26; the fault is of the port (a measuring function, labels in a vector); `iter.filter` and `iter.max` of the language would shorten it |
+| #75 | The answer to the general instruction for the ports (freedom, idioms, files, bugs) | given 2026-11-26: grade 6 of 10; the idioms of the engine are the weak point |
+| #76 | Redo the engine with the idioms of #75 (b) | open |
+| #77 | Excerpt, idiomatic: the default of `toc`, `Slides.flat`, an `if` as an expression over an optional field | shown 2026-11-26 |
+| #78 | Excerpt, bad: the generated slide is a node `:Slide [ :Contents [...] ]` with a tag that the check refuses | shown 2026-11-26; the fault is of the port: generated content should be laid out directly, not through a hidden tag |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.

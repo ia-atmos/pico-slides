@@ -57,7 +57,6 @@ Block   : :Row   [ Block* ]
         | :List  [ Block* ]
         | Text
         | :image [ STR ]            ;; the path of the file
-        | :Contents [ ]             ;; the table of contents
         | :Box [ Block ]            ;; one block, with a border or not
         | STR                       ;; same as :text [ STR ]
 Text    : :text  [ STR ]
@@ -71,7 +70,6 @@ Text    : :text  [ STR ]
 | Slide | `:Slide` | directly in `:Slides` or `:Section` | any block |
 | Composite block | `:Row`, `:Col`, `:List` | anywhere inside a slide | any block |
 | Leaf block | `:text`, `:image`, a string | anywhere inside a slide | its content only |
-| Generated block | `:Contents` | anywhere inside a slide | nothing |
 | Box | `:Box` | anywhere inside a slide | exactly one block |
 
 Not valid: a `:Slide` inside a block or another slide; a block directly
@@ -314,8 +312,8 @@ options (open).
 
 With `anim=true`:
 
-- It goes on a composite: `:List`, `:Row`, `:Col`, `:Contents`, and
-  `:Slide` itself.
+- It goes on a composite: `:List`, `:Row`, `:Col`, and `:Slide`
+  itself.
 - Its children appear one per key, in order. The first child is
   visible from the start, with the composite, so a slide never opens
   on an empty list.
@@ -331,31 +329,23 @@ With `anim=true`:
   slide at its start, and `End` to the last slide with all shown.
 - A page of the PDF is a slide with all shown.
 
-## The table of contents (#11a, to be confirmed)
+## The table of contents: `toc` (#11b, #56)
 
-*Chosen by the session from its own recommendation. The author's
-"ok" that was read as #39 most likely answered another question, so
-it waits for his confirmation.*
+A section starts with a slide that the engine makes: the titles of all
+sections, in order, with those of the other sections dimmed (the color
+of the text mixed with the background). The document writes nothing
+for it.
 
-`:Contents []` is a block that the engine expands into a `:List` with
-the titles of the sections, in order.
-
-```
-:Slides [
-    :Slide [ title="Agenda", :Contents [] ],
-    :Section [ title="Introduction", ... ],
-    :Section [ title="Objectives",   ... ],
-]
-```
-
-- It goes wherever a block goes, and takes the fields of a block
-  (`rect`, `span`, `anchor`, `anim`, `color`, `font`, `cell`).
-- In a slide of a section, the titles of the other sections are
-  dimmed (the color of the text mixed with the background).
-- It has no entries.
+- `toc=false` in a `:Section` leaves that section with no such slide;
+  `toc=false` in `:Slides` is the default for all sections, which a
+  section may turn on again with `toc=true`.
+- The slide has the style of its section (colors, font), counts as a
+  slide for the keys and for the PDF, and has no title.
+- There is no block for the table of contents in the format (#11b): a
+  `:Contents` written in a document is refused.
 
 Not there: a key that shows the table of contents at any time (the
-`T` of Aurora), and the references.
+`T` of Aurora, #60), and the references (#61).
 
 ## Style (#4a, #9a)
 
@@ -387,8 +377,9 @@ font  = [ file=STR, size=NUM ]
 | `title` | `:Slide`, `:Section` | no |
 | `rect` | any block | no |
 | `span` | any child of a composite | no |
-| `anim=true` | a composite (`:Slide`, `:Row`, `:Col`, `:List`, `:Contents`) | no |
-| `mark` | `:List`, `:Contents` | yes, to sublists |
+| `anim=true` | a composite (`:Slide`, `:Row`, `:Col`, `:List`) | no |
+| `mark` | `:List` | yes, to sublists |
+| `toc` | `:Slides`, `:Section` | from `:Slides` to the sections |
 | `anchor` | any node | yes |
 | `wrap=true` | any node | yes |
 | `color=[fg=, bg=]` | any node | yes, field by field |
