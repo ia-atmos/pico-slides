@@ -14,7 +14,9 @@ is on screen), show him a few screenshots in the report.
 Rule of the author (2026-11-26, for every project, relayed by `atmos`):
 for each group of changes, show one pair of short Atmos excerpts from
 that work, with file and line: one idiomatic, one bad (awkward,
-verbose, a workaround).
+verbose, a workaround). Each excerpt takes a number of this
+session's sequence, and each bad one says why it is bad and what would
+make it better (the language, the environment, or the port) (2026-11-26).
 
 ## Waits for the author
 
@@ -49,6 +51,8 @@ recommendation. Listed on 2026-11-25.
 | #70 | Use the anchors and relative rects of pico in the engine | superseded by #71 |
 | #71 | The engine in relative coordinates | done: the layout measures at the size of the world when it is made, and draws in `'%'` with the anchors of pico; with a fixed `aspect`, a resize needs no new layout. Layers per frame (#70b) later, when steps by visibility, effects, or overlays ask for them |
 | #72 | The marker of a `:List` | #72a: `mark=:dot|:none|:num|:alpha|"string"`, inherited by sublists; done |
+| #73 | Excerpt, idiomatic: `Slides.mark_label`, `src/slides.atm:950`, an `ifs` as an expression | shown 2026-11-26 |
+| #74 | Excerpt, bad: the width of the markers, `src/slides.atm:963`, a second pass over the items with a hand counter, measured through `Slides.wrap` | shown 2026-11-26; the fault is of the port (a measuring function, labels in a vector); `iter.filter` and `iter.max` of the language would shorten it |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.
