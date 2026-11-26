@@ -20,7 +20,7 @@ recommendation. Listed on 2026-11-25.
 |---|---|---|
 | #48 | Where `aspect` and `fit` go: the document or the command line | done: `aspect` in the document; `./slides --fit=stretch|bars`, the `=` mandatory |
 | #11 | `:Contents []`, implemented by the session: a list of the titles of the sections, the others dimmed inside a section | confirm |
-| #49 | The dot of a list item takes the color of the item's text (implemented by the session) | confirm |
+| #49 | The marker of a list item takes the color of the item's text | settled with #72 |
 | #50 | Convert the slides of the courses, starting with LP1 | pilot done by hand (#62a): `exs/lp1/lp1-02-c.slides`, 9 slides. Missing for a faithful copy: boxes that fit their code (#64), the balloon of slide 8 (#57), the gradient of the background |
 | #51 | `:Box`: a frame around its content | done: `:Box [ border=[size=, color=], <one block> ]` |
 | #52 | A container with a single element needs no `:Row` or `:Col` | done: a `:Box` with no `border` |
@@ -43,6 +43,7 @@ recommendation. Listed on 2026-11-25.
 | #69 | A presentation may fail on a smaller window (overflow is an error, no aspect, no wrap) | open: recommended to always give `aspect`, and to check with `--pdf` |
 | #70 | Use the anchors and relative rects of pico in the engine | superseded by #71 |
 | #71 | The engine in relative coordinates | done: the layout measures at the size of the world when it is made, and draws in `'%'` with the anchors of pico; with a fixed `aspect`, a resize needs no new layout. Layers per frame (#70b) later, when steps by visibility, effects, or overlays ask for them |
+| #72 | The marker of a `:List` | #72a: `mark=:dot|:none|:num|:alpha|"string"`, inherited by sublists; done |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.

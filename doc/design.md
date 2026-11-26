@@ -101,7 +101,21 @@ behaves the same in a slide, in a `:Col`, or as an item of a `:List`.
 - `:Slide` stacks its children as a `:Col` does. A `:Col` is only
   needed inside a `:Row`.
 - `:List` stacks its children, with a marker before each. An item is
-  any block, so a list nests in a list.
+  any block, so a list nests in a list. The field `mark` chooses the
+  marker (#72), and a sublist inherits it unless it sets its own:
+
+  | `mark` | Marker |
+  |---|---|
+  | `:dot` (default) | a drawn dot |
+  | `:none` | none, and no indentation |
+  | `:num` | `1.`, `2.`, ... |
+  | `:alpha` | `a)`, `b)`, ... |
+  | a string | the string itself, as `mark="–"` |
+
+  A written marker is right-aligned in a space as wide as the widest
+  one, so the texts align. Every marker has the color of the text of
+  its item (#49), and appears with its item. A sublist is not counted.
+  Since a tag is a string at run time, `mark=:x` is the marker `x`.
 
 - `:Box` holds a single block (#51, #52). It draws a border inside its
   rectangle if it has `border=[size=, color=]`: `size` is a fraction of
@@ -374,6 +388,7 @@ font  = [ file=STR, size=NUM ]
 | `rect` | any block | no |
 | `span` | any child of a composite | no |
 | `anim=true` | a composite (`:Slide`, `:Row`, `:Col`, `:List`, `:Contents`) | no |
+| `mark` | `:List`, `:Contents` | yes, to sublists |
 | `anchor` | any node | yes |
 | `wrap=true` | any node | yes |
 | `color=[fg=, bg=]` | any node | yes, field by field |
