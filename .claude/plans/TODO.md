@@ -7,6 +7,10 @@ reused. The decisions themselves are in `doc/design.md`.
 Rule of the author (2026-11-20): always write in `main`, in small
 commits, with a pull with rebase before each push.
 
+Rule of the author (2026-11-26, for every project with a screen, relayed
+by `atmos`): at each big step (a milestone, a feature that changes what
+is on screen), show him a few screenshots in the report.
+
 ## Waits for the author
 
 Each item has a number, a description, and the session's
