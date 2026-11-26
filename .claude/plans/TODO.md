@@ -11,6 +11,11 @@ Rule of the author (2026-11-26, for every project with a screen, relayed
 by `atmos`): at each big step (a milestone, a feature that changes what
 is on screen), show him a few screenshots in the report.
 
+Rule of the author (2026-11-26, for every project, relayed by `atmos`):
+for each group of changes, show one pair of short Atmos excerpts from
+that work, with file and line: one idiomatic, one bad (awkward,
+verbose, a workaround).
+
 ## Waits for the author
 
 Each item has a number, a description, and the session's
