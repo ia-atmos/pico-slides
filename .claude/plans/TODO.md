@@ -57,13 +57,15 @@ recommendation. Listed on 2026-11-25.
 | #71 | The engine in relative coordinates | done: the layout measures at the size of the world when it is made, and draws in `'%'` with the anchors of pico; with a fixed `aspect`, a resize needs no new layout. Layers per frame (#70b) later, when steps by visibility, effects, or overlays ask for them |
 | #72 | The marker of a `:List` | #72a: `mark=:dot|:none|:num|:alpha|"string"`, inherited by sublists; done |
 | #73 | Excerpt, idiomatic: `Slides.mark_label`, `src/slides.atm:950`, an `ifs` as an expression | shown 2026-11-26 |
-| #74 | Excerpt, bad: the width of the markers, `src/slides.atm:963`, a second pass over the items with a hand counter, measured through `Slides.wrap` | shown 2026-11-26; the fault is of the port (a measuring function, labels in a vector); `iter.filter` and `iter.max` of the language would shorten it |
+| #74 | Excerpt, bad (fixed in #76): the width of the markers, `src/slides.atm:963` then, a second pass over the items with a hand counter, measured through `Slides.wrap` | shown 2026-11-26; the fault is of the port (a measuring function, labels in a vector); `iter.filter` and `iter.max` of the language would shorten it |
 | #75 | The answer to the general instruction for the ports (freedom, idioms, files, bugs) | given 2026-11-26: grade 6 of 10; the idioms of the engine are the weak point |
-| #76 | Redo the engine with the idioms of #75 (b) | open |
+| #76 | Redo the engine with the idioms of #75 (b) | done 2026-11-26: the check as tables; no global state (a context for the layout, a view for the tasks that draw); marks with `iter`; the table of contents with no hidden tag; `await false`. Not done: the type tests stay `type(v) == 'table'` (#82); the parser of `:text.rich` still walks by index |
 | #77 | Excerpt, idiomatic: the default of `toc`, `Slides.flat`, an `if` as an expression over an optional field | shown 2026-11-26 |
-| #78 | Excerpt, bad: the generated slide is a node `:Slide [ :Contents [...] ]` with a tag that the check refuses | shown 2026-11-26; the fault is of the port: generated content should be laid out directly, not through a hidden tag |
+| #78 | Excerpt, bad (fixed in #76): the generated slide is a node `:Slide [ :Contents [...] ]` with a tag that the check refuses | shown 2026-11-26; the fault is of the port: generated content should be laid out directly, not through a hidden tag |
 | #79 | Excerpt, idiomatic: `kinds@k`, `src/slides.atm:90`, a table as the description of a group of fields, indexed by the key in hand | shown 2026-11-26, with the rewrite of `@(name)` to `@name` (3 places, asked for all projects) |
-| #80 | Excerpt, bad: the cache of point sizes, `src/slides.atm:512`, a string key built by hand and a search by trial | shown 2026-11-26; the search is a workaround for pico (a text with an exact line height, env-pico#14); the key is of the port (a table per font would do) |
+| #80 | Excerpt, bad (the key fixed in #76; the search stays): the cache of point sizes, `src/slides.atm:512`, a string key built by hand and a search by trial | shown 2026-11-26; the search is a workaround for pico (a text with an exact line height, env-pico#14); the key is of the port (a table per font would do) |
+| #81 | Excerpt, idiomatic: `Slides.fields` and `Slides.check_fields`, `src/slides.atm:178` and `:219`, the fields of each tag as data | shown 2026-11-26 |
+| #82 | Excerpt, bad: `Slides.istab`, `src/slides.atm:46`, a type test by hand because `??` is not safe on a string of the document (`"table" ?? :table` is true) | shown 2026-11-26; of the language: `??` mixes equality, type, and tag prefix |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.

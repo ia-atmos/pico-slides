@@ -14,13 +14,6 @@
 ;; no new layout (#71). A task draws each frame.
 
 pin Slides = [
-    W = 0,              ;; the dimension of the world when the layout was made,
-    H = 0,              ;;   in pixels: the frames are measured in it
-    CW = 0,             ;; the dimension of the world now, in pixels
-    CH = 0,
-    sections = [],      ;; the titles of the sections, during a layout
-    step = 0,           ;; the step of the current slide that is shown
-    ctr  = 0,           ;; the last step given, during the layout of a slide
     pts = [],           ;; cache: font -> line height -> point size
     kind = [],          ;; the kinds of values of a field (see CHECK)
     ;; defaults (provisional, see doc/design.md)
@@ -374,9 +367,9 @@ func Slides.own_bg (n) {
     }
 }
 
-func Slides.own_pad (n) {
+func Slides.own_pad (L, n) {
     if Slides.istab(n) && n.cell && (n.cell.pad != nil) {
-        n.cell.pad * Slides.H
+        n.cell.pad * L.H
     } else {
         0
     }
@@ -785,11 +778,11 @@ func Slides.overflow (loc, what, by) {
 
 ;; A text in the rectangle `R`. `n` is the :text node, or nil for a
 ;; plain string.
-func Slides.lay_text (str, n, R, up, loc) {
+func Slides.lay_text (L, str, n, R, up, loc) {
     val st = Slides.style(up, n)
     val rect = Slides.istab(n) && n.rect
-    val I = Slides.shrink(R, Slides.own_pad(n))
-    val h = if rect && rect.h => rect.h*I.h => st.size*Slides.H
+    val I = Slides.shrink(R, Slides.own_pad(L, n))
+    val h = if rect && rect.h => rect.h*I.h => st.size*L.H
     val maxw = if rect && rect.w => rect.w*I.w => I.w
     val blk = Slides.text_block(str, n, st, h, maxw)
     val x, y, ax = Slides.place(I, blk.w, blk.h, rect, st.anchor, :C)
@@ -808,10 +801,10 @@ func Slides.lay_text (str, n, R, up, loc) {
 
 ;; An image in the rectangle `R`. With `fill`, the size in its `rect`
 ;; was already used by who gave the rectangle.
-func Slides.lay_image (n, R, up, loc, fill) {
+func Slides.lay_image (L, n, R, up, loc, fill) {
     val st = Slides.style(up, n)
     val rect = n.rect
-    val I = Slides.shrink(R, Slides.own_pad(n))
+    val I = Slides.shrink(R, Slides.own_pad(L, n))
     val d = pico.get.image(n@0)
     val rw = !fill && rect && rect.w
     val rh = !fill && rect && rect.h
@@ -865,23 +858,23 @@ func Slides.span (n) {
 ;; `i`. With `anim=true`, the first child shows with the composite, and
 ;; each other one at the next step. The children are laid out in order,
 ;; so a child that has steps of its own takes them before the next one.
-func Slides.kid (n, st, i) {
+func Slides.kid (L, n, st, i) {
     val k = Slides.style(st, nil)
     if Slides.istab(n) && n.anim && (i > 0) {
-        set Slides.ctr = Slides.ctr + 1
-        set k.step = Slides.ctr
+        set L.ctr = L.ctr + 1
+        set k.step = L.ctr
     }
     k
 }
 
 ;; Splits `I` among the blocks `n@from..`, in a row or in a column.
-func Slides.lay_split (n, from, I, st, loc, row) {
+func Slides.lay_split (L, n, from, I, st, loc, row) {
     val kids = []
     val cnt = #n - from
     if cnt <= 0 {
         return kids
     }
-    val gap = st.gap * Slides.H
+    val gap = st.gap * L.H
     var sum = 0
     loop i in (from, #n-1) {
         set sum = sum + Slides.span(n@i)
@@ -896,7 +889,7 @@ func Slides.lay_split (n, from, I, st, loc, row) {
         } else {
             [ x=I.x, y=pos, w=I.w, h=len ]
         }
-        set kids@+ = Slides.lay(k, R, Slides.kid(n, st, i-from), Slides.sub(loc, i, k))
+        set kids@+ = Slides.lay(L, k, R, Slides.kid(L, n, st, i-from), Slides.sub(loc, i, k))
         set pos = pos + len + gap
     }
     kids
@@ -916,8 +909,8 @@ func Slides.mark_label (mark, j) {
     }
 }
 
-func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
-    val line = math.floor(st.size * Slides.H)
+func Slides.lay_list_at (L, n, st, x, y, maxw, Hc, loc) {
+    val line = math.floor(st.size * L.H)
     val mark = st.mark || :dot
     val written = (mark != :dot) && (mark != :none)
     ;; the written markers, one for each item that is not a sublist,
@@ -934,13 +927,13 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
         else          => math.floor(line * 1.2)
     }
     var nmark = 0
-    val gap = st.gap * Slides.H
+    val gap = st.gap * L.H
     val out = [ x=x, y=y, w=0, h=0, bg=nil, kids=[], dots=[], fg=st.fg, step=st.step ]
     var cy = y
     loop i in #n {
         val k = n@i
         val me = Slides.sub(loc, i, k)
-        val cst = Slides.kid(n, st, i)
+        val cst = Slides.kid(L, n, st, i)
         val ktag = if Slides.isstr(k) => :text => k.tag
         val ix = x + indent
         val iw = maxw - indent
@@ -953,7 +946,7 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
                 if Slides.istab(k) && k.rect {
                     Slides.err(me, "rect is not supported in a text of a :List")
                 }
-                val blk = Slides.text_block(str, k, ist, ist.size*Slides.H, iw)
+                val blk = Slides.text_block(str, k, ist, ist.size*L.H, iw)
                 if blk.w > iw + 0.5 {
                     Slides.overflow(me, "width", blk.w - iw)
                 }
@@ -965,7 +958,7 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
                 ]
             }
             ktag == :List => {
-                set f = Slides.lay_list_at(k, Slides.style(cst, k), ix, cy, iw, Hc, me)
+                set f = Slides.lay_list_at(L, k, Slides.style(cst, k), ix, cy, iw, Hc, me)
             }
             else => {
                 if !(k.rect && k.rect.h) {
@@ -978,18 +971,18 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
                 }
                 ifs {
                   k.tag == :image => {
-                    set f = Slides.lay_image(k, [x=ix, y=cy, w=iw, h=h], ist, me, true)
+                    set f = Slides.lay_image(L, k, [x=ix, y=cy, w=iw, h=h], ist, me, true)
                     set f.w = f.img.w
                   }
                   k.tag == :Box => {
-                    set f = Slides.lay_box(k, [x=ix, y=cy, w=iw, h=h], ist, me, true)
+                    set f = Slides.lay_box(L, k, [x=ix, y=cy, w=iw, h=h], ist, me, true)
                   }
                   else => {
                     val kst = Slides.style(ist, k)
-                    val I = Slides.shrink([x=ix, y=cy, w=iw, h=h], Slides.own_pad(k))
+                    val I = Slides.shrink([x=ix, y=cy, w=iw, h=h], Slides.own_pad(L, k))
                     set f = [
                         x=ix, y=cy, w=iw, h=h, bg=Slides.own_bg(k), step=kst.step,
-                        kids=Slides.lay_split(k, 0, I, kst, me, k.tag == :Row),
+                        kids=Slides.lay_split(L, k, 0, I, kst, me, k.tag == :Row),
                     ]
                   }
                 }
@@ -1025,11 +1018,11 @@ func Slides.lay_list_at (n, st, x, y, maxw, Hc, loc) {
     out
 }
 
-func Slides.lay_list (n, R, up, loc) {
+func Slides.lay_list (L, n, R, up, loc) {
     val st = Slides.style(up, n)
     val B = Slides.box(n, R, st)
-    val I = Slides.shrink(B, Slides.own_pad(n))
-    val f = Slides.lay_list_at(n, st, 0, 0, I.w, I.h, loc)
+    val I = Slides.shrink(B, Slides.own_pad(L, n))
+    val f = Slides.lay_list_at(L, n, st, 0, 0, I.w, I.h, loc)
     if f.h > I.h + 0.5 {
         Slides.overflow(loc, "height", f.h - I.h)
     }
@@ -1040,56 +1033,56 @@ func Slides.lay_list (n, R, up, loc) {
 
 ;; The slide that starts the section `sec`, made by the engine: a list
 ;; with the titles of the sections, those of the others dimmed (#56).
-func Slides.lay_toc (sec, up, loc) {
+func Slides.lay_toc (L, sec, up, loc) {
     val dim = pico.color.mix(up.fg, up.bg)
     val list = :List [ anchor=:C ]
-    loop i in #Slides.sections {
-        val title = Slides.sections@i
+    loop i in #L.sections {
+        val title = L.sections@i
         set list@+ = if i == sec => title => :text [ title, color=[fg=dim] ]
     }
-    Slides.lay_slide(:Slide [ list ], up, loc)
+    Slides.lay_slide(L, :Slide [ list ], up, loc)
 }
 
 ;; A box: a single block, with a border inside its rectangle if it has
 ;; `border=[size=, color=]` (the color of the text if absent), and its
 ;; padding inside the border. With `fill`, the size in its `rect` was
 ;; already used by who gave the rectangle.
-func Slides.lay_box (n, R, up, loc, fill) {
+func Slides.lay_box (L, n, R, up, loc, fill) {
     val st = Slides.style(up, n)
     val B = if fill => R => Slides.box(n, R, st)
     var bw = 0
     var border = nil
     if n.border {
-        set bw = math.max(1, math.floor((n.border.size || Slides.dflt.border) * Slides.H))
+        set bw = math.max(1, math.floor((n.border.size || Slides.dflt.border) * L.H))
         set border = [ w=bw, color=(n.border.color || st.fg) ]
     }
-    val I = Slides.shrink(B, bw + Slides.own_pad(n))
+    val I = Slides.shrink(B, bw + Slides.own_pad(L, n))
     [
         x=B.x, y=B.y, w=B.w, h=B.h, bg=Slides.own_bg(n), step=st.step,
         border=border,
-        kids=[ Slides.lay(n@0, I, Slides.kid(n, st, 0), Slides.sub(loc, 0, n@0)) ],
+        kids=[ Slides.lay(L, n@0, I, Slides.kid(L, n, st, 0), Slides.sub(loc, 0, n@0)) ],
     ]
 }
 
 ;; Resolves the block `n` in the rectangle `R`, with the style `up` of
 ;; its parent. Evaluates to its frame.
-func Slides.lay (n, R, up, loc) {
+func Slides.lay (L, n, R, up, loc) {
     if Slides.isstr(n) {
-        return Slides.lay_text(n, nil, R, up, loc)
+        return Slides.lay_text(L, n, nil, R, up, loc)
     }
     val me = loc
     ifs {
-        n ?? :text      => Slides.lay_text(n@0, n, R, up, me)
-        n.tag == :image => Slides.lay_image(n, R, up, me, false)
-        n.tag == :List  => Slides.lay_list(n, R, up, me)
-        n.tag == :Box   => Slides.lay_box(n, R, up, me, false)
+        n ?? :text      => Slides.lay_text(L, n@0, n, R, up, me)
+        n.tag == :image => Slides.lay_image(L, n, R, up, me, false)
+        n.tag == :List  => Slides.lay_list(L, n, R, up, me)
+        n.tag == :Box   => Slides.lay_box(L, n, R, up, me, false)
         else => {
             val st = Slides.style(up, n)
             val B = Slides.box(n, R, st)
-            val I = Slides.shrink(B, Slides.own_pad(n))
+            val I = Slides.shrink(B, Slides.own_pad(L, n))
             [
                 x=B.x, y=B.y, w=B.w, h=B.h, bg=Slides.own_bg(n), step=st.step,
-                kids=Slides.lay_split(n, 0, I, st, loc, n.tag == :Row),
+                kids=Slides.lay_split(L, n, 0, I, st, loc, n.tag == :Row),
             ]
         }
     }
@@ -1097,13 +1090,13 @@ func Slides.lay (n, R, up, loc) {
 
 ;; A slide: its background, the band of its title, and its body, which
 ;; stacks the children as a column.
-func Slides.lay_slide (n, up, loc) {
+func Slides.lay_slide (L, n, up, loc) {
     val st = Slides.style(up, n)
-    val W = Slides.W
-    val H = Slides.H
+    val W = L.W
+    val H = L.H
     val out = [ x=0, y=0, w=W, h=H, bg=st.bg, kids=[], step=0, steps=0 ]
     set st.step = 0
-    set Slides.ctr = 0
+    set L.ctr = 0
     val I = Slides.shrink([x=0, y=0, w=W, h=H], st.pad*H)
     var top = I.y
     if n.title != nil {
@@ -1136,11 +1129,11 @@ func Slides.lay_slide (n, up, loc) {
     val body = [ x=I.x, y=top, w=I.w, h=math.max(0, I.y+I.h-top) ]
     ;; the pad of the slide is its own: the blocks do not get it
     set st.pad = 0
-    val kids = Slides.lay_split(n, 0, body, st, loc, false)
+    val kids = Slides.lay_split(L, n, 0, body, st, loc, false)
     loop i in #kids {
         set out.kids@+ = kids@i
     }
-    set out.steps = Slides.ctr
+    set out.steps = L.ctr
     out
 }
 
@@ -1148,10 +1141,9 @@ func Slides.lay_slide (n, up, loc) {
 ;; receives, the index of its section, and its name for messages. A
 ;; section starts with a generated slide, its table of contents. Also
 ;; collects the titles of the sections.
-func Slides.flat (doc) {
+func Slides.flat (L, doc) {
     val out = []
     val root = Slides.style(Slides.root(), doc)
-    vector.clear(Slides.sections)
     var num = 0             ;; the slides that the document writes
     loop i in #doc {
         val s = doc@i
@@ -1160,7 +1152,7 @@ func Slides.flat (doc) {
             set out@+ = [ n=s, up=root, section=nil, loc=("slide " ++ num) ]
         } else {
             val sst = Slides.style(root, s)
-            val sec = #Slides.sections
+            val sec = #L.sections
             ;; the table of contents, unless the section or the document
             ;; says `toc=false` (#56)
             val toc = if s.toc != nil => s.toc => (doc.toc != false)
@@ -1172,26 +1164,26 @@ func Slides.flat (doc) {
                 set num = num + 1
                 set out@+ = [ n=s@j, up=sst, section=sec, loc=("slide " ++ num) ]
             }
-            set Slides.sections@+ = s.title
+            set L.sections@+ = s.title
         }
     }
     out
 }
 
-;; Resolves all slides for a world of `w` x `h` pixels. Evaluates to a
-;; vector with the frame of each slide. A text that does not fit is an
-;; error here, before any slide is shown.
+;; Resolves all slides for a world of `w` x `h` pixels. Evaluates to
+;; [W=, H=, slides=], with the frame of each slide. A text that does not
+;; fit is an error here, before any slide is shown.
+;;
+;; The context `L` of a layout goes through its functions: the dimension
+;; of the world, the titles of the sections, and the last step given in
+;; the slide being laid out.
 func Slides.layout (doc, w, h) {
-    set Slides.W = w
-    set Slides.H = h
-    val flat = Slides.flat(doc)
-    val out = []
-    loop i in #flat {
-        val e = flat@i
-        set out@+ = if e.toc => Slides.lay_toc(e.section, e.up, e.loc)
-                             => Slides.lay_slide(e.n, e.up, e.loc)
-    }
-    out
+    val L = [ W=w, H=h, ctr=0, sections=[] ]
+    val slides = iter.map(Slides.flat(L, doc), \(e) {
+        if e.toc => Slides.lay_toc(L, e.section, e.up, e.loc)
+                 => Slides.lay_slide(L, e.n, e.up, e.loc)
+    })
+    [ W=w, H=h, slides=slides ]
 }
 
 ;; ------------------------------------------------------------------------
@@ -1199,36 +1191,36 @@ func Slides.layout (doc, w, h) {
 ;; ------------------------------------------------------------------------
 
 ;; A rectangle of the layout in `'%'` of the world.
-func Slides.pct (x, y, w, h) {
-    ['%', x=x/Slides.W, y=y/Slides.H, w=w/Slides.W, h=h/Slides.H, anchor=:NW]
+func Slides.pct (V, x, y, w, h) {
+    ['%', x=x/V.W, y=y/V.H, w=w/V.W, h=h/V.H, anchor=:NW]
 }
 
 ;; Draws what is of the frame itself, if its step was reached, in `'%'`
 ;; of the world (#71).
-func Slides.draw (f) {
-    if f.step > Slides.step {
+func Slides.draw (V, f) {
+    if f.step > V.step {
         return
     }
-    val W = Slides.W
-    val H = Slides.H
+    val W = V.W
+    val H = V.H
     if f.bg != nil {
         pico.set.pencil [ color=f.bg, shape=[style=:fill] ]
-        pico.output.draw.rect(Slides.pct(f.x, f.y, f.w, f.h))
+        pico.output.draw.rect(Slides.pct(V, f.x, f.y, f.w, f.h))
     }
     if f.border {
         ;; at least a pixel of the world as it is now
         val b = f.border
-        val bx = math.max(b.w/W, 1/Slides.CW) * W
-        val by = math.max(b.w/H, 1/Slides.CH) * H
+        val bx = math.max(b.w/W, 1/V.CW) * W
+        val by = math.max(b.w/H, 1/V.CH) * H
         pico.set.pencil [ color=b.color, shape=[style=:fill] ]
-        pico.output.draw.rect(Slides.pct(f.x, f.y, f.w, by))
-        pico.output.draw.rect(Slides.pct(f.x, f.y+f.h-by, f.w, by))
-        pico.output.draw.rect(Slides.pct(f.x, f.y, bx, f.h))
-        pico.output.draw.rect(Slides.pct(f.x+f.w-bx, f.y, bx, f.h))
+        pico.output.draw.rect(Slides.pct(V, f.x, f.y, f.w, by))
+        pico.output.draw.rect(Slides.pct(V, f.x, f.y+f.h-by, f.w, by))
+        pico.output.draw.rect(Slides.pct(V, f.x, f.y, bx, f.h))
+        pico.output.draw.rect(Slides.pct(V, f.x+f.w-bx, f.y, bx, f.h))
     }
     if f.img {
         val i = f.img
-        pico.output.draw.image(i.path, Slides.pct(i.x, i.y, i.w, i.h))
+        pico.output.draw.image(i.path, Slides.pct(V, i.x, i.y, i.w, i.h))
     }
     if f.lines {
         pico.set.pencil [ color=f.fg,
@@ -1255,27 +1247,27 @@ func Slides.draw (f) {
     if f.dots {
         loop i in #f.dots {
             val d = f.dots@i
-            if d.step > Slides.step {
+            if d.step > V.step {
                 skip
             }
             pico.set.pencil [ color=d.fg, shape=[style=:fill] ]
-            pico.output.draw.oval(Slides.pct(d.x, d.y, d.d, d.d))
+            pico.output.draw.oval(Slides.pct(V, d.x, d.y, d.d, d.d))
         }
     }
 }
 
 ;; A frame is a task: it draws what is its own, and holds the tasks of
 ;; the frames inside it, which draw over it.
-task Slides.Frame (f) {
+task Slides.Frame (V, f) {
     spawn {
         loop on :draw {
-            Slides.draw(f)
+            Slides.draw(V, f)
         }
     }
     pin kids = tasks()
     if f.kids {
         loop i in #f.kids {
-            spawn @kids Slides.Frame(f.kids@i)
+            spawn @kids Slides.Frame(V, f.kids@i)
         }
     }
     await false
@@ -1300,8 +1292,6 @@ func Slides.world (doc, fit) {
         }
     }
     pico.set.scene [ dim=['!', w=w, h=h], fit=(fit || :stretch) ]
-    set Slides.CW = w
-    set Slides.CH = h
     return w, h
 }
 
@@ -1315,11 +1305,15 @@ task Slides.Play (doc, fit) {
     Slides.check(doc)
     var cur = 0
     var fs = false
-    set Slides.step = 0
+    ;; what the tasks that draw see: the dimension of the world when the
+    ;; layout was made (W, H) and now (CW, CH), and the step that is shown
+    pin V = [ W=0, H=0, CW=0, CH=0, step=0 ]
     loop {
         val w, h = Slides.world(doc, fit)
-        pin frames = Slides.layout(doc, w, h)
+        pin lay = Slides.layout(doc, w, h)
+        val frames = lay.slides
         val last = #frames - 1
+        set V.W, V.H, V.CW, V.CH = w, h, w, h
         val quit = par :any {
             ;; with a fixed `aspect`, a new size of the window is only a
             ;; new size of the world, drawn in `'%'`; with no `aspect`,
@@ -1327,47 +1321,47 @@ task Slides.Play (doc, fit) {
             loop {
                 await :window.resize
                 until !doc.aspect
-                Slides.world(doc, fit)
+                set V.CW, V.CH = Slides.world(doc, fit)
             }
             false
         } with {
             loop {
-                pin slide = spawn Slides.Frame(frames@cur)
+                pin slide = spawn Slides.Frame(V, frames@cur)
                 val go = loop e on :key.dn {
                     val k = e.key
                     ifs {
                         (k=='Right') || (k=='Down') || (k=='Space') || (k=='PageDown') => {
                             ifs {
-                                Slides.step < frames@cur.steps => {
-                                    set Slides.step = Slides.step + 1
+                                V.step < frames@cur.steps => {
+                                    set V.step = V.step + 1
                                 }
                                 cur < last => {
                                     set cur = cur + 1
-                                    set Slides.step = 0
+                                    set V.step = 0
                                     break :go
                                 }
                             }
                         }
                         (k=='Left') || (k=='Up') || (k=='Backspace') || (k=='PageUp') => {
                             ifs {
-                                Slides.step > 0 => {
-                                    set Slides.step = Slides.step - 1
+                                V.step > 0 => {
+                                    set V.step = V.step - 1
                                 }
                                 cur > 0 => {
                                     set cur = cur - 1
-                                    set Slides.step = frames@cur.steps
+                                    set V.step = frames@cur.steps
                                     break :go
                                 }
                             }
                         }
                         k == 'Home' => {
                             set cur = 0
-                            set Slides.step = 0
+                            set V.step = 0
                             break :go
                         }
                         k == 'End' => {
                             set cur = last
-                            set Slides.step = frames@cur.steps
+                            set V.step = frames@cur.steps
                             break :go
                         }
                         k == 'F' => {
@@ -1394,10 +1388,12 @@ task Slides.Play (doc, fit) {
 task Slides.Export (doc, prefix) {
     Slides.check(doc)
     val w, h = Slides.world(doc)
-    pin frames = Slides.layout(doc, w, h)
+    pin lay = Slides.layout(doc, w, h)
+    val frames = lay.slides
+    pin V = [ W=w, H=h, CW=w, CH=h, step=0 ]
     loop i in #frames {
-        set Slides.step = frames@i.steps
-        pin slide = spawn Slides.Frame(frames@i)
+        set V.step = frames@i.steps
+        pin slide = spawn Slides.Frame(V, frames@i)
         ;; the world holds a drawing from its `:draw` until the clear of
         ;; the next frame, which comes after `:frame`
         await :draw

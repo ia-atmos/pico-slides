@@ -449,8 +449,13 @@ author as a whole (#37).
 In `src/slides.atm`, in three parts:
 
 - **`Slides.check(doc)`** validates the document against the grammar
-  and the fields above. An unknown field is an error, with the place
+  and the fields above. The fields of each tag and the kind of each
+  field are tables (`Slides.fields`, `Slides.blocks`, `Slides.kind`),
+  so a new field is a line of data. An unknown field is an error, with the place
   of the node: `slides : slide 2 > 0:Row > 1:text : unknown field : colour`.
+- There is no global state: a layout passes its context to its
+  functions, and the task that plays owns what the tasks that draw see
+  (the dimension of the world and the step shown).
 - **`Slides.layout(doc, w, h)`** resolves all slides for a world of
   `w` by `h` pixels: it measures in them, and a frame is drawn in `'%'`
   of the world, with the anchors of pico (#71). Each node becomes a **frame**: its rectangle in
