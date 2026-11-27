@@ -69,6 +69,10 @@ recommendation. Listed on 2026-11-25.
 | #83 | Excerpt, idiomatic: `src/slides.atm:294`, `s ?? :Slide [] => ...`, a tag test that a string of the document cannot pass | shown 2026-11-26 |
 | #84 | Excerpt, bad: `src/slides.atm:943`, `ktag ?? :text` where `ktag` is a tag or `:text` for a string; works, but the tag is taken out of the node only to be tested | shown 2026-11-26; of the port. Fixed 2026-11-27 (#85 a): `Slides.isstr(k) || (k ?? :text [])`, and `sub = k ?? :List []` for a list inside the list |
 | #85 | Fix #84? | answered 2026-11-27: (a) yes |
+| #86 | Excerpt, idiomatic: `val sub = k ?? :List []`, the node tested, not its tag | shown 2026-11-27; replaced by #89 |
+| #87 | Excerpt, bad: `Slides.isstr(k) \|\| (k ?? :text [])`, "is a text" said twice | shown 2026-11-27; of the port |
+| #88 | A `Slides.istext`? | replaced by #89 |
+| #89 | One `Slides.is(v, T)` for every test of type or tag (a string is a :text and no other tag); no `:X []`, no `isstr`/`istab`/`isnum` | answered 2026-11-27: (a), and tell atmos-lang; done |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.
