@@ -95,9 +95,6 @@ pico.open()
 await Slides.Play(doc)
 ```
 
-See [`exs/program/main.atm`](exs/program/main.atm), which runs with
-`deps/env-pico/atmos-pico main.atm` from its directory.
-
 ## Files
 
 | Path | What |
