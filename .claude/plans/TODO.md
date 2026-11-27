@@ -67,7 +67,8 @@ recommendation. Listed on 2026-11-25.
 | #81 | Excerpt, idiomatic: `Slides.fields` and `Slides.check_fields`, `src/slides.atm:178` and `:219`, the fields of each tag as data | shown 2026-11-26 |
 | #82 | Excerpt, bad: `Slides.istab`, `src/slides.atm:46`, a type test by hand because `??` is not safe on a string of the document (`"table" ?? :table` is true) | answered 2026-11-26 (a), as atmos-lang advised: a tag test on a value that may be a string is `v ?? :T []` (a table pattern), with no `Slides.istab` before it; done in the check, `Slides.text_block`, and the marks. Of the language: `??` mixes equality, type, and tag prefix |
 | #83 | Excerpt, idiomatic: `src/slides.atm:294`, `s ?? :Slide [] => ...`, a tag test that a string of the document cannot pass | shown 2026-11-26 |
-| #84 | Excerpt, bad: `src/slides.atm:943`, `ktag ?? :text` where `ktag` is a tag or `:text` for a string; works, but the tag is taken out of the node only to be tested | shown 2026-11-26; of the port: could be `k ?? :text []` with a string branch first |
+| #84 | Excerpt, bad: `src/slides.atm:943`, `ktag ?? :text` where `ktag` is a tag or `:text` for a string; works, but the tag is taken out of the node only to be tested | shown 2026-11-26; of the port. Fixed 2026-11-27 (#85 a): `Slides.isstr(k) || (k ?? :text [])`, and `sub = k ?? :List []` for a list inside the list |
+| #85 | Fix #84? | answered 2026-11-27: (a) yes |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.

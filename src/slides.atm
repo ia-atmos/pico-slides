@@ -934,13 +934,13 @@ func Slides.lay_list_at (L, n, st, x, y, maxw, Hc, loc) {
         val k = n@i
         val me = Slides.sub(loc, i, k)
         val cst = Slides.kid(L, n, st, i)
-        val ktag = if Slides.isstr(k) => :text => k.tag
+        val sub = k ?? :List []         ;; a list inside the list
         val ix = x + indent
         val iw = maxw - indent
         var f
         var first = line        ;; the height of the first line of the item
         ifs {
-            ktag ?? :text => {
+            Slides.isstr(k) || (k ?? :text []) => {
                 val str = if Slides.isstr(k) => k => k@0
                 val ist = Slides.style(cst, k)
                 if Slides.istab(k) && k.rect {
@@ -957,7 +957,7 @@ func Slides.lay_list_at (L, n, st, x, y, maxw, Hc, loc) {
                     lines=blk.lines, pt=blk.pt, fg=ist.fg, file=ist.file,
                 ]
             }
-            ktag == :List => {
+            sub => {
                 set f = Slides.lay_list_at(L, k, Slides.style(cst, k), ix, cy, iw, Hc, me)
             }
             else => {
@@ -989,7 +989,7 @@ func Slides.lay_list_at (L, n, st, x, y, maxw, Hc, loc) {
                 set first = h
             }
         }
-        if written && (ktag != :List) {
+        if written && !sub {
             ;; a written marker, aligned to the right of its space, in the
             ;; color of the text of the item
             val b = marks@nmark
@@ -1000,7 +1000,7 @@ func Slides.lay_list_at (L, n, st, x, y, maxw, Hc, loc) {
             ]
             set nmark = nmark + 1
         }
-        if (mark == :dot) && (ktag != :List) {
+        if (mark == :dot) && !sub {
             val d = math.max(2, math.floor(line * 0.3))
             set out.dots@+ = [
                 step = cst.step,
