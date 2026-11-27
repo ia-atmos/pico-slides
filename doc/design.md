@@ -43,6 +43,14 @@ A tag in lower case is a primitive, which draws (`:text`, `:image`). A
 tag that starts in upper case is a composite, which arranges its
 children (`:Slide`, `:Row`).
 
+A string where a block is expected is the short form of `:text [...]`.
+The engine tests a node with `Slides.is(v, T)`: `T` is a tag, or a
+type name (`:string`, `:number`, `:boolean`, `:table`); a string is a
+`:text` and no other tag, so a text of the document such as `"Slide"`
+is never taken for a node (#82, #89). Since a tag is a string at run
+time, a tag spelled as a type name (`:table`) would be read as the type:
+no tag of the vocabulary may be one (#92).
+
 The whole document is data: constructors, strings, numbers, and tags,
 with no functions. It can be read with `X.load`.
 

@@ -74,7 +74,8 @@ recommendation. Listed on 2026-11-25.
 | #88 | A `Slides.istext`? | replaced by #89 |
 | #89 | One `Slides.is(v, T)` for every test of type or tag (a string is a :text and no other tag); no `:X []`, no `isstr`/`istab`/`isnum` | answered 2026-11-27: (a), and tell atmos-lang; done. atmos-lang: `v ?? T []` with a tag in a variable is a call, not a pattern; `v ?? [tag=T]` works; `Slides.is` keeps `v ?? T` after the type test |
 | #90 | Excerpt, idiomatic: `Slides.is(s, :Slide) => ...`, `src/slides.atm:296`, one test for every type and tag | shown 2026-11-27; approved 2026-11-27 |
-| #91 | Excerpt, bad: the first branch of `Slides.is`, the type names written by hand (`T == :string` or ...); a node tagged `:table` would collide | shown 2026-11-27; of the language: no test for "a type name" |
+| #91 | Excerpt, bad: the first branch of `Slides.is`, the type names written by hand (`T == :string` or ...); a node tagged `:table` would collide | shown 2026-11-27; of the language: no test for "a type name". #92: (a) kept as it is, the collision written in doc/design.md |
+| #92 | What to do with #91? | answered 2026-11-27: (a) keep it, and note in doc/design.md that no tag may be a type name |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.
