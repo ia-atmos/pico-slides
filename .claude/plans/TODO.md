@@ -72,7 +72,7 @@ recommendation. Listed on 2026-11-25.
 | #86 | Excerpt, idiomatic: `val sub = k ?? :List []`, the node tested, not its tag | shown 2026-11-27; replaced by #89 |
 | #87 | Excerpt, bad: `Slides.isstr(k) \|\| (k ?? :text [])`, "is a text" said twice | shown 2026-11-27; of the port |
 | #88 | A `Slides.istext`? | replaced by #89 |
-| #89 | One `Slides.is(v, T)` for every test of type or tag (a string is a :text and no other tag); no `:X []`, no `isstr`/`istab`/`isnum` | answered 2026-11-27: (a), and tell atmos-lang; done |
+| #89 | One `Slides.is(v, T)` for every test of type or tag (a string is a :text and no other tag); no `:X []`, no `isstr`/`istab`/`isnum` | answered 2026-11-27: (a), and tell atmos-lang; done. atmos-lang: `v ?? T []` with a tag in a variable is a call, not a pattern; `v ?? [tag=T]` works; `Slides.is` keeps `v ?? T` after the type test |
 
 The table form of `anim` (#6: something that disappears, shows only at
 some keys, or is highlighted) waits for #54 and #55.
